@@ -69,12 +69,30 @@ describe('Library App', () => {
     cy.get('[data-testid="showAllBooks"]').click();
     removeBook();
   });
+
+  it('should edit a book', () => {
+    addBook('Book 1', 'https://example.com/image.jpg');
+
+    const newTitle = 'Changed book';
+    editBook(newTitle, 'https://example.com/image.jpg');
+
+    cy.get('[data-testid="book"]').contains(newTitle);
+
+    removeBook();
+  });
 });
 
 function addBook(title: string, cover: string) {
     cy.get('[data-testid="title"]').type(title);
     cy.get('[data-testid="cover"]').type(cover);
     cy.get('[data-testid="add"]').click();
+}
+
+function editBook(title: string, cover: string) {
+    cy.get('[data-testid="edit"]').click();
+    cy.get('[data-testid="editTitle"]').type(title);
+    cy.get('[data-testid="editCover"]').type(cover);
+    cy.get('[data-testid="saveEdit"]').click();
 }
 
 function removeBook() {

@@ -274,11 +274,13 @@ export class LibraryApp extends React.Component<any, any> {
                             this.updating[index]
                                 ? <div>
                                     <input
+                                        data-testid="editTitle"
                                         className="book-edit-input"
                                         defaultValue={b.title} // Asumiendo que inputData se usa para la edición
                                         onChange={this.handleUpdateInputChange.bind(this)}
                                     />
                                     <input
+                                        data-testid="editCover"
                                         className="book-edit-input"
                                         defaultValue={b.pictureUrl} //
                                         onChange={this.handlePicture.bind(this)}
@@ -297,7 +299,7 @@ export class LibraryApp extends React.Component<any, any> {
                                                 {b.completed ? 'Mark as Unread' : 'Mark as Read'}
                                             </button>}
                                         {!this.updating[index] &&
-                                            <button className="book-button"
+                                            <button data-testid="edit" className="book-button"
                                                     onClick={() => this.edit(index, b.title, b.pictureUrl)}><IonIcon icon={createOutline}/>
                                             </button>
                                         }
@@ -312,7 +314,7 @@ export class LibraryApp extends React.Component<any, any> {
 
                         {this.updating[index] &&
                             <div>
-                                <button className="library-button book-update-button"
+                                <button data-testid="saveEdit" className="library-button book-update-button"
                                         onClick={this.update.bind(this, index)}>
                                     Save
                                 </button>
