@@ -7,7 +7,7 @@
     "start:front": "vite",
     "test:e2e": "cypress run",
     "test:unit": "vitest run --dir src/tests/unit",
-    "test:integration": "jest --testMatch='**/src/tests/integration/**/*.test.*'",
+    "test:integration": "vitest run --dir src/tests/integration",
     "test": "npm run test:e2e && npm run test:integration && npm run test:unit",
     "compile:watch": "tsc -w --noEmit"
   },

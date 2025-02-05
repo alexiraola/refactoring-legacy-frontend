@@ -244,30 +244,32 @@ export class LibraryApp extends React.Component<any, any> {
                 <h1>LIBRARY APP</h1>
                 <div>
                     <input
+                        data-testid="title"
                         className="library-input"
                         value={this.inputData}
                         placeholder={'Book Title'}
                         onChange={this.handleInputChange.bind(this)}
                     />
                     <input
+                        data-testid="cover"
                         className="library-input"
                         value={this.coverData}
                         placeholder={'Cover Url'}
                         onChange={this.onCoverChange.bind(this)}
                     />
                 </div>
-                <button className="library-button add-book-button" onClick={this.add.bind(this)}>
+                <button data-testid="add" className="library-button add-book-button" onClick={this.add.bind(this)}>
                     Add Book
                 </button>
                 <h2>Books Read: {this.counter}</h2>
                 <div>
-                <button className="library-button all-filter" onClick={this.setFilter.bind(this, 'all')}>All</button>
-                    <button className="library-button completed-filter" onClick={this.setFilter.bind(this, 'completed')}>Read</button>
-                    <button className="library-button incomplete-filter" onClick={this.setFilter.bind(this, 'incomplete')}>Unread</button>
+                <button data-testid="showAllBooks" className="library-button all-filter" onClick={this.setFilter.bind(this, 'all')}>All</button>
+                <button data-testid="showReadBooks" className="library-button completed-filter" onClick={this.setFilter.bind(this, 'completed')}>Read</button>
+                <button data-testid="showUnreadBooks" className="library-button incomplete-filter" onClick={this.setFilter.bind(this, 'incomplete')}>Unread</button>
                 </div>
-                <ul className="book-list">
+                <ul data-testid="books" className="book-list">
                 {books.map((b, index) => (
-                    <li className="book">
+                    <li className="book" data-testid="book">
                         {
                             this.updating[index]
                                 ? <div>
@@ -287,10 +289,10 @@ export class LibraryApp extends React.Component<any, any> {
                                     <div>
 
                                         <p className="title">
-                                        {b.title} {b.completed && <IonIcon className={"complete-icon"} icon={checkmark}></IonIcon> }
+                                        {b.title} {b.completed && <IonIcon data-testid="completed" className={"complete-icon"} icon={checkmark}></IonIcon> }
                                         </p>
                                         {!this.updating[index] &&
-                                            <button className="book-button"
+                                            <button data-testid="markAsRead" className="book-button"
                                                     onClick={this.toggleComplete.bind(this, index)}>
                                                 {b.completed ? 'Mark as Unread' : 'Mark as Read'}
                                             </button>}
@@ -300,7 +302,7 @@ export class LibraryApp extends React.Component<any, any> {
                                             </button>
                                         }
                                         {!this.updating[index] &&
-                                            <button className="book-button book-delete-button"
+                                            <button data-testid="delete" className="book-button book-delete-button"
                                                     onClick={this.delete.bind(this, index)}>
                                                 <IonIcon icon={trash}/>
                                             </button>}
