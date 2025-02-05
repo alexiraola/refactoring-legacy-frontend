@@ -76,7 +76,7 @@ describe('Library App', () => {
     const newTitle = 'Changed book';
     editBook(newTitle, 'https://example.com/image.jpg');
 
-    cy.get('[data-testid="book"]').contains(newTitle);
+    cy.contains('[data-testid="book"]', newTitle).should('exist');
 
     removeBook();
   });
@@ -90,8 +90,8 @@ function addBook(title: string, cover: string) {
 
 function editBook(title: string, cover: string) {
     cy.get('[data-testid="edit"]').click();
-    cy.get('[data-testid="editTitle"]').type(title);
-    cy.get('[data-testid="editCover"]').type(cover);
+    cy.get('[data-testid="editTitle"]').clear().type(title);
+    cy.get('[data-testid="editCover"]').clear().type(cover);
     cy.get('[data-testid="saveEdit"]').click();
 }
 
