@@ -16,9 +16,7 @@ type FilterType = 'all' | 'completed' | 'incomplete';
 export class LibraryApp extends React.Component<any, any> {
   collection: Book[] = [];
   bookTitle = '';
-  editBookTitle = '';
   bookCover = '';
-  editBookCover = '';
   counter = 0;
   filter: FilterType = 'all';
   updating = [];
@@ -113,31 +111,32 @@ export class LibraryApp extends React.Component<any, any> {
     }
   }
 
-  update(index) {
+  update(index, bookTitle: string, bookCover: string) {
     const min = 3; // Longitud mínima del texto
     const max = 100; // Longitud máxima del texto
     const words = ['prohibited', 'forbidden', 'banned'];
     let temp = false;
     try {
-      new URL(this.editBookCover);
+      new URL(bookCover);
       temp = true;
     }
     catch (e) {
       temp = false;
     }
+
     if (!temp) {
       alert('Error: The cover url is not valid');
     }
     // Validación de longitud mínima y máxima
-    else if (this.editBookTitle.length < min || this.editBookTitle.length > max) {
+    else if (bookTitle.length < min || bookTitle.length > max) {
       alert(`Error: The title must be between ${min} and ${max} characters long.`);
-    } else if (/[^a-zA-Z0-9\s]/.test(this.editBookTitle)) {
+    } else if (/[^a-zA-Z0-9\s]/.test(bookTitle)) {
       // Validación de caracteres especiales
       alert('Error: The title can only contain letters, numbers, and spaces.');
     } else {
       // Validación de palabras prohibidas
       let temp1 = false;
-      for (let word of this.editBookTitle.split(/\s+/)) {
+      for (let word of bookTitle.split(/\s+/)) {
         if (words.includes(word)) {
           alert(`Error: The title cannot include the prohibited word "${word}"`);
           temp1 = true;
@@ -149,7 +148,7 @@ export class LibraryApp extends React.Component<any, any> {
         // Validación de texto repetido (excluyendo el índice actual)
         let temp2 = false;
         for (let i = 0; i < this.collection.length; i++) {
-          if (i !== index && this.collection[i].title === this.editBookTitle) {
+          if (i !== index && this.collection[i].title === bookTitle) {
             temp2 = true;
             break;
           }
@@ -162,7 +161,7 @@ export class LibraryApp extends React.Component<any, any> {
           fetch(`http://localhost:3000/api/${this.collection[index].id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title: this.editBookTitle, pictureUrl: this.editBookCover, completed: this.collection[index].completed }),
+            body: JSON.stringify({ title: bookTitle, pictureUrl: bookCover, completed: this.collection[index].completed }),
           })
             .then(response => response.json())
             .then(data => {
@@ -220,13 +219,6 @@ export class LibraryApp extends React.Component<any, any> {
     return fBooks;
   }
 
-  edit(index, text, url) {
-    this.editBookTitle = text;
-    this.editBookCover = url;
-    this.updating[index] = true;
-    this.forceUpdate();
-  }
-
   render() {
     const books = this.getBooks();
 
@@ -263,9 +255,7 @@ export class LibraryApp extends React.Component<any, any> {
             onMarkAsReadClicked={() => this.toggleComplete(index)}
             onDeleteClicked={() => this.delete(index)}
             onEdit={(title, cover) => {
-              this.editBookTitle = title;
-              this.editBookCover = cover;
-              this.update(index);
+              this.update(index, title, cover);
             }}
           />
           )}
