@@ -11,33 +11,43 @@ type Props = {
   onEdit: (title: string, cover: string) => void;
 }
 
+type BookItemState = {
+  updating: boolean;
+  editingTitle: string;
+  editingCover: string;
+}
+
 export default function BookItem({ book, onMarkAsReadClicked, onDeleteClicked, onEdit }: Props) {
-  const [updating, setUpdating] = useState(false);
-  const [editingTitle, setEditingTitle] = useState(book.title);
-  const [editingCover, setEditingCover] = useState(book.pictureUrl);
+  const [state, setState] = useState<BookItemState>({
+    updating: false,
+    editingTitle: book.title,
+    editingCover: book.pictureUrl
+  });
 
   const edit = () => {
-    setUpdating(true);
-    setEditingTitle(book.title);
-    setEditingCover(book.pictureUrl);
+    setState({
+      updating: true,
+      editingTitle: book.title,
+      editingCover: book.pictureUrl
+    })
   }
 
   return (
     <li className="book" data-testid="book">
       {
-        updating
+        state.updating
           ? <div>
             <input
               data-testid="editTitle"
               className="book-edit-input"
               defaultValue={book.title} // Asumiendo que inputData se usa para la edición
-              onChange={event => setEditingTitle(event.target.value)}
+              onChange={event => setState({ ...state, editingTitle: event.target.value })}
             />
             <input
               data-testid="editCover"
               className="book-edit-input"
               defaultValue={book.pictureUrl} //
-              onChange={event => setEditingCover(event.target.value)}
+              onChange={event => setState({ ...state, editingCover: event.target.value })}
             />
           </div>
           : <div className={"book-item"}>
@@ -47,17 +57,17 @@ export default function BookItem({ book, onMarkAsReadClicked, onDeleteClicked, o
               <p className="title">
                 {book.title} {book.completed && <IonIcon data-testid="completed" className={"complete-icon"} icon={checkmark}></IonIcon>}
               </p>
-              {!updating &&
+              {!state.updating &&
                 <button data-testid="markAsRead" className="book-button"
                   onClick={() => onMarkAsReadClicked()}>
                   {book.completed ? 'Mark as Unread' : 'Mark as Read'}
                 </button>}
-              {!updating &&
+              {!state.updating &&
                 <button data-testid="edit" className="book-button"
                   onClick={() => edit()}><IonIcon icon={createOutline} />
                 </button>
               }
-              {!updating &&
+              {!state.updating &&
                 <button data-testid="delete" className="book-button book-delete-button"
                   onClick={() => onDeleteClicked()}>
                   <IonIcon icon={trash} />
@@ -66,17 +76,17 @@ export default function BookItem({ book, onMarkAsReadClicked, onDeleteClicked, o
           </div>
       }
 
-      {updating &&
+      {state.updating &&
         <div>
           <button data-testid="saveEdit" className="library-button book-update-button"
             onClick={() => {
-              onEdit(editingTitle, editingCover);
-              setUpdating(false);
+              onEdit(state.editingTitle, state.editingCover);
+              setState({ ...state, updating: false });
             }}>
             Save
           </button>
           <button className="library-button book-update-button"
-            onClick={() => setUpdating(false)}>
+            onClick={() => setState({ ...state, updating: false })}>
             Cancel
           </button>
         </div>
