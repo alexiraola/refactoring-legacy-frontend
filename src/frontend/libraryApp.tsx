@@ -11,14 +11,16 @@ export class Book {
   ) { }
 }
 
+type FilterType = 'all' | 'completed' | 'incomplete';
+
 export class LibraryApp extends React.Component<any, any> {
   collection: Book[] = [];
-  inputData = '';
-  inputUpdateData = '';
-  coverData = '';
-  coverUpdateData = '';
+  bookTitle = '';
+  editBookTitle = '';
+  bookCover = '';
+  editBookCover = '';
   counter = 0;
-  f = 'all';
+  filter: FilterType = 'all';
   updating = [];
 
   constructor(props) {
@@ -35,15 +37,15 @@ export class LibraryApp extends React.Component<any, any> {
       .catch(error => console.log(error));
   }
 
-  handleInputChange(event) {
+  onTitleChange(event) {
     var value = event.target.value;
-    this.inputData = value;
+    this.bookTitle = value;
     this.forceUpdate();
   }
 
   onCoverChange(event) {
     var value = event.target.value;
-    this.coverData = value;
+    this.bookCover = value;
     this.forceUpdate();
   }
 
@@ -53,7 +55,7 @@ export class LibraryApp extends React.Component<any, any> {
     const forbidden = ['prohibited', 'forbidden', 'banned'];
     let temp = false;
     try {
-      new URL(this.coverData);
+      new URL(this.bookCover);
       temp = true;
     }
     catch (e) {
@@ -63,14 +65,14 @@ export class LibraryApp extends React.Component<any, any> {
       alert('Error: The cover url is not valid');
     }
     // Validación de longitud mínima y máxima
-    else if (this.inputData.length < min || this.inputData.length > max) {
+    else if (this.bookTitle.length < min || this.bookTitle.length > max) {
       alert(`Error: The title must be between ${min} and ${max} characters long.`);
-    } else if (/[^a-zA-Z0-9\s]/.test(this.inputData)) {
+    } else if (/[^a-zA-Z0-9\s]/.test(this.bookTitle)) {
       // Validación de caracteres especiales
       alert('Error: The title can only contain letters, numbers, and spaces.');
     } else {
       // Validación de palabras prohibidas
-      const words = this.inputData.split(/\s+/);
+      const words = this.bookTitle.split(/\s+/);
       let foundForbiddenWord = false;
       for (let word of words) {
         if (forbidden.includes(word)) {
@@ -84,7 +86,7 @@ export class LibraryApp extends React.Component<any, any> {
         // Validación de texto repetido
         let isRepeated = false;
         for (let i = 0; i < this.collection.length; i++) {
-          if (this.collection[i].title === this.inputData) {
+          if (this.collection[i].title === this.bookTitle) {
             isRepeated = true;
             break;
           }
@@ -97,13 +99,13 @@ export class LibraryApp extends React.Component<any, any> {
           fetch('http://localhost:3000/api/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: uuid(), title: this.inputData, pictureUrl: this.coverData, completed: false }),
+            body: JSON.stringify({ id: uuid(), title: this.bookTitle, pictureUrl: this.bookCover, completed: false }),
           })
             .then(response => response.json())
             .then(data => {
               this.collection.push(data);
-              this.inputData = '';
-              this.coverData = '';
+              this.bookTitle = '';
+              this.bookCover = '';
               this.forceUpdate();
             });
         }
@@ -117,7 +119,7 @@ export class LibraryApp extends React.Component<any, any> {
     const words = ['prohibited', 'forbidden', 'banned'];
     let temp = false;
     try {
-      new URL(this.coverUpdateData);
+      new URL(this.editBookCover);
       temp = true;
     }
     catch (e) {
@@ -127,15 +129,15 @@ export class LibraryApp extends React.Component<any, any> {
       alert('Error: The cover url is not valid');
     }
     // Validación de longitud mínima y máxima
-    else if (this.inputUpdateData.length < min || this.inputUpdateData.length > max) {
+    else if (this.editBookTitle.length < min || this.editBookTitle.length > max) {
       alert(`Error: The title must be between ${min} and ${max} characters long.`);
-    } else if (/[^a-zA-Z0-9\s]/.test(this.inputUpdateData)) {
+    } else if (/[^a-zA-Z0-9\s]/.test(this.editBookTitle)) {
       // Validación de caracteres especiales
       alert('Error: The title can only contain letters, numbers, and spaces.');
     } else {
       // Validación de palabras prohibidas
       let temp1 = false;
-      for (let word of this.inputUpdateData.split(/\s+/)) {
+      for (let word of this.editBookTitle.split(/\s+/)) {
         if (words.includes(word)) {
           alert(`Error: The title cannot include the prohibited word "${word}"`);
           temp1 = true;
@@ -147,7 +149,7 @@ export class LibraryApp extends React.Component<any, any> {
         // Validación de texto repetido (excluyendo el índice actual)
         let temp2 = false;
         for (let i = 0; i < this.collection.length; i++) {
-          if (i !== index && this.collection[i].title === this.inputUpdateData) {
+          if (i !== index && this.collection[i].title === this.editBookTitle) {
             temp2 = true;
             break;
           }
@@ -160,7 +162,7 @@ export class LibraryApp extends React.Component<any, any> {
           fetch(`http://localhost:3000/api/${this.collection[index].id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title: this.inputUpdateData, pictureUrl: this.coverUpdateData, completed: this.collection[index].completed }),
+            body: JSON.stringify({ title: this.editBookTitle, pictureUrl: this.editBookCover, completed: this.collection[index].completed }),
           })
             .then(response => response.json())
             .then(data => {
@@ -200,7 +202,7 @@ export class LibraryApp extends React.Component<any, any> {
 
 
   setFilter(filter) {
-    this.f = filter;
+    this.filter = filter;
     this.forceUpdate();
   }
 
@@ -208,9 +210,9 @@ export class LibraryApp extends React.Component<any, any> {
     var fBooks = [];
     for (var i = 0; i < this.collection.length; i++) {
       if (
-        this.f === 'all' ||
-        (this.f === 'completed' && this.collection[i].completed) ||
-        (this.f === 'incomplete' && !this.collection[i].completed)
+        this.filter === 'all' ||
+        (this.filter === 'completed' && this.collection[i].completed) ||
+        (this.filter === 'incomplete' && !this.collection[i].completed)
       ) {
         fBooks.push(this.collection[i]);
       }
@@ -219,8 +221,8 @@ export class LibraryApp extends React.Component<any, any> {
   }
 
   edit(index, text, url) {
-    this.inputUpdateData = text;
-    this.coverUpdateData = url;
+    this.editBookTitle = text;
+    this.editBookCover = url;
     this.updating[index] = true;
     this.forceUpdate();
   }
@@ -235,14 +237,14 @@ export class LibraryApp extends React.Component<any, any> {
           <input
             data-testid="title"
             className="library-input"
-            value={this.inputData}
+            value={this.bookTitle}
             placeholder={'Book Title'}
-            onChange={this.handleInputChange.bind(this)}
+            onChange={this.onTitleChange.bind(this)}
           />
           <input
             data-testid="cover"
             className="library-input"
-            value={this.coverData}
+            value={this.bookCover}
             placeholder={'Cover Url'}
             onChange={this.onCoverChange.bind(this)}
           />
@@ -261,8 +263,8 @@ export class LibraryApp extends React.Component<any, any> {
             onMarkAsReadClicked={() => this.toggleComplete(index)}
             onDeleteClicked={() => this.delete(index)}
             onEdit={(title, cover) => {
-              this.inputUpdateData = title;
-              this.coverUpdateData = cover;
+              this.editBookTitle = title;
+              this.editBookCover = cover;
               this.update(index);
             }}
           />
