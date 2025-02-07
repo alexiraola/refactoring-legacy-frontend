@@ -102,65 +102,49 @@ export class LibraryApp extends React.Component<any, any> {
   }
 
   update(index, bookTitle: string, bookCover: string) {
-    const min = 3; // Longitud mínima del texto
-    const max = 100; // Longitud máxima del texto
-    const words = ['prohibited', 'forbidden', 'banned'];
-    let temp = false;
-    try {
-      new URL(bookCover);
-      temp = true;
-    }
-    catch (e) {
-      temp = false;
-    }
+    const minLength = 3; // Longitud mínima del texto
+    const maxLength = 100; // Longitud máxima del texto
+    const forbiddenWords = ['prohibited', 'forbidden', 'banned'];
 
-    if (!temp) {
+    if (!isValidUrl(bookCover)) {
       alert('Error: The cover url is not valid');
+      return
     }
-    // Validación de longitud mínima y máxima
-    else if (bookTitle.length < min || bookTitle.length > max) {
-      alert(`Error: The title must be between ${min} and ${max} characters long.`);
-    } else if (/[^a-zA-Z0-9\s]/.test(bookTitle)) {
-      // Validación de caracteres especiales
+    const hasValidLength = bookTitle.length < minLength || bookTitle.length > maxLength;
+    if (hasValidLength) {
+      alert(`Error: The title must be between ${minLength} and ${maxLength} characters long.`);
+      return;
+    }
+    const isValidTitle = /[^a-zA-Z0-9\s]/.test(bookTitle);
+    if (isValidTitle) {
       alert('Error: The title can only contain letters, numbers, and spaces.');
-    } else {
-      // Validación de palabras prohibidas
-      let temp1 = false;
-      for (let word of bookTitle.split(/\s+/)) {
-        if (words.includes(word)) {
-          alert(`Error: The title cannot include the prohibited word "${word}"`);
-          temp1 = true;
-          break;
-        }
-      }
-
-      if (!temp1) {
-        // Validación de texto repetido (excluyendo el índice actual)
-        let temp2 = false;
-        for (let i = 0; i < this.collection.length; i++) {
-          if (i !== index && this.collection[i].title === bookTitle) {
-            temp2 = true;
-            break;
-          }
-        }
-
-        if (temp2) {
-          alert('Error: The title is already in the collection.');
-        } else {
-          // Si pasa todas las validaciones, actualizar el libro
-          fetch(`http://localhost:3000/api/${this.collection[index].id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title: bookTitle, pictureUrl: bookCover, completed: this.collection[index].completed }),
-          })
-            .then(response => response.json())
-            .then(data => {
-              this.collection[index] = data;
-              this.forceUpdate();
-            });
-        }
-      }
+      return;
     }
+    const words = bookTitle.split(/\s+/);
+    const foundForbiddenWord = forbiddenWords.find(word => words.includes(word));
+    if (foundForbiddenWord) {
+      alert(`Error: The title cannot include the prohibited word "${foundForbiddenWord}"`);
+      return
+    }
+
+    this.collection.forEach((book, i) => {
+      if (i !== index && book.title == this.bookTitle) {
+        alert('Error: The title is already in the collection.');
+        return;
+      }
+    })
+
+    // Si pasa todas las validaciones, actualizar el libro
+    fetch(`http://localhost:3000/api/${this.collection[index].id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: bookTitle, pictureUrl: bookCover, completed: this.collection[index].completed }),
+    })
+      .then(response => response.json())
+      .then(data => {
+        this.collection[index] = data;
+        this.forceUpdate();
+      });
   }
 
   delete(index) {
