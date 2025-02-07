@@ -13,13 +13,22 @@ export class Book {
 
 type FilterType = 'all' | 'completed' | 'incomplete';
 
+function isValidUrl(url: string) {
+  try {
+    new URL(url);
+    return true;
+  }
+  catch (e) {
+    return false;
+  }
+}
+
 export class LibraryApp extends React.Component<any, any> {
   collection: Book[] = [];
   bookTitle = '';
   bookCover = '';
   counter = 0;
   filter: FilterType = 'all';
-  updating = [];
 
   constructor(props) {
     super(props);
@@ -27,9 +36,6 @@ export class LibraryApp extends React.Component<any, any> {
       .then(response => response.json())
       .then(data => {
         this.collection = data;
-        for (let i = 0; i < this.collection.length; i++) {
-          this.updating.push(false);
-        }
         this.forceUpdate();
       })
       .catch(error => console.log(error));
@@ -48,67 +54,51 @@ export class LibraryApp extends React.Component<any, any> {
   }
 
   add() {
-    const min = 3; // Longitud mínima del texto
-    const max = 100; // Longitud máxima del texto
-    const forbidden = ['prohibited', 'forbidden', 'banned'];
-    let temp = false;
-    try {
-      new URL(this.bookCover);
-      temp = true;
-    }
-    catch (e) {
-      temp = false;
-    }
-    if (!temp) {
+    const minTitleLength = 3; // Longitud mínima del texto
+    const maxTitleLength = 100; // Longitud máxima del texto
+    const forbiddenWords = ['prohibited', 'forbidden', 'banned'];
+
+    if (!isValidUrl(this.bookCover)) {
       alert('Error: The cover url is not valid');
+      return;
     }
-    // Validación de longitud mínima y máxima
-    else if (this.bookTitle.length < min || this.bookTitle.length > max) {
-      alert(`Error: The title must be between ${min} and ${max} characters long.`);
-    } else if (/[^a-zA-Z0-9\s]/.test(this.bookTitle)) {
-      // Validación de caracteres especiales
+    const hasValidLength = this.bookTitle.length < minTitleLength || this.bookTitle.length > maxTitleLength;
+    if (hasValidLength) {
+      alert(`Error: The title must be between ${minTitleLength} and ${maxTitleLength} characters long.`);
+      return;
+    }
+    const isValidTitle = /[^a-zA-Z0-9\s]/.test(this.bookTitle);
+    if (isValidTitle) {
       alert('Error: The title can only contain letters, numbers, and spaces.');
-    } else {
-      // Validación de palabras prohibidas
-      const words = this.bookTitle.split(/\s+/);
-      let foundForbiddenWord = false;
-      for (let word of words) {
-        if (forbidden.includes(word)) {
-          alert(`Error: The title cannot include the prohibited word "${word}"`);
-          foundForbiddenWord = true;
-          break;
-        }
-      }
-
-      if (!foundForbiddenWord) {
-        // Validación de texto repetido
-        let isRepeated = false;
-        for (let i = 0; i < this.collection.length; i++) {
-          if (this.collection[i].title === this.bookTitle) {
-            isRepeated = true;
-            break;
-          }
-        }
-
-        if (isRepeated) {
-          alert('Error: The title is already in the collection.');
-        } else {
-          // Si pasa todas las validaciones, agregar el "libro"
-          fetch('http://localhost:3000/api/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: uuid(), title: this.bookTitle, pictureUrl: this.bookCover, completed: false }),
-          })
-            .then(response => response.json())
-            .then(data => {
-              this.collection.push(data);
-              this.bookTitle = '';
-              this.bookCover = '';
-              this.forceUpdate();
-            });
-        }
-      }
+      return;
     }
+    // Validación de palabras prohibidas
+    const words = this.bookTitle.split(/\s+/);
+    let foundForbiddenWord = words.find(word => forbiddenWords.includes(word));
+    if (foundForbiddenWord) {
+      alert(`Error: The title cannot include the prohibited word "${foundForbiddenWord}"`);
+      return;
+    }
+
+    this.collection.forEach(book => {
+      if (book.title == this.bookTitle) {
+        alert('Error: The title is already in the collection.');
+        return;
+      }
+    })
+    // Si pasa todas las validaciones, agregar el "libro"
+    fetch('http://localhost:3000/api/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: uuid(), title: this.bookTitle, pictureUrl: this.bookCover, completed: false }),
+    })
+      .then(response => response.json())
+      .then(data => {
+        this.collection.push(data);
+        this.bookTitle = '';
+        this.bookCover = '';
+        this.forceUpdate();
+      });
   }
 
   update(index, bookTitle: string, bookCover: string) {
