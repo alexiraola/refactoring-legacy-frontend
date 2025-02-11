@@ -2,7 +2,7 @@ import { IonIcon } from "@ionic/react";
 import * as React from "react";
 import { useState } from "react";
 import { trash, createOutline, checkmark } from 'ionicons/icons';
-import { Book } from "./libraryApp";
+import { Book } from "./domain/book";
 
 type Props = {
   book: Book;
