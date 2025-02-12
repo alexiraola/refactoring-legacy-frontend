@@ -5,16 +5,6 @@ import { filterBooks } from "./domain/services/FilterBooks";
 
 type FilterType = 'all' | 'completed' | 'incomplete';
 
-function isValidUrl(url: string) {
-  try {
-    new URL(url);
-    return true;
-  }
-  catch (e) {
-    return false;
-  }
-}
-
 export class LibraryApp extends React.Component<any, any> {
   collection: BookDto[] = [];
   bookTitle = '';
