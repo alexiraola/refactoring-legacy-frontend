@@ -22,6 +22,16 @@ describe('Library App', () => {
     removeBook();
   });
 
+  it('should not be able to add a book with an invalid title', () => {
+    addBook('b', 'https://example.com/image.jpg');
+
+    cy.on('window.alert', str => {
+      expect(str).toBe('Error: The title must be between 3 and 100 characters long.')
+    })
+
+    cy.get('[data-testid="book"]').should('not.exist');
+  });
+
   it('should remove a book', () => {
     addBook(title, 'https://example.com/image.jpg');
 
@@ -83,18 +93,18 @@ describe('Library App', () => {
 });
 
 function addBook(title: string, cover: string) {
-    cy.get('[data-testid="title"]').type(title);
-    cy.get('[data-testid="cover"]').type(cover);
-    cy.get('[data-testid="add"]').click();
+  cy.get('[data-testid="title"]').type(title);
+  cy.get('[data-testid="cover"]').type(cover);
+  cy.get('[data-testid="add"]').click();
 }
 
 function editBook(title: string, cover: string) {
-    cy.get('[data-testid="edit"]').click();
-    cy.get('[data-testid="editTitle"]').clear().type(title);
-    cy.get('[data-testid="editCover"]').clear().type(cover);
-    cy.get('[data-testid="saveEdit"]').click();
+  cy.get('[data-testid="edit"]').click();
+  cy.get('[data-testid="editTitle"]').clear().type(title);
+  cy.get('[data-testid="editCover"]').clear().type(cover);
+  cy.get('[data-testid="saveEdit"]').click();
 }
 
 function removeBook() {
-    cy.get('[data-testid="delete"]').click();
+  cy.get('[data-testid="delete"]').click();
 }
