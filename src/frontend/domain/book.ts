@@ -37,6 +37,10 @@ export class Book {
     this.pictureUrl = cover;
   }
 
+  toggleCompleted() {
+    this.completed = !this.completed;
+  }
+
   private static ensureIsValidTitle(title: string) {
     const minTitleLength = 3;
     const maxTitleLength = 100;

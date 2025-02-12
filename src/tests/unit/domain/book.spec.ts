@@ -69,4 +69,16 @@ describe('The Book', () => {
       book.updateCover('B');
     }).toThrow('Error: The cover url is not valid');
   });
+
+  it('should mark a book as completed', () => {
+    const book = Book.create('Book title', 'https://example.com/cover.jpg');
+
+    book.toggleCompleted();
+
+    expect(book.completed).toBeTruthy();
+
+    book.toggleCompleted();
+
+    expect(book.completed).toBeFalsy();
+  });
 });
