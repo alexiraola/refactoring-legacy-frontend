@@ -1,5 +1,12 @@
 import { v4 as uuid } from "uuid";
 
+export type BookDto = {
+  id: string;
+  title: string;
+  pictureUrl: string;
+  completed: boolean;
+}
+
 export class Book {
   constructor(
     readonly id: string,
@@ -12,6 +19,12 @@ export class Book {
     this.ensureIsValidTitle(title);
     this.ensureIsValidCover(cover);
     return new Book(uuid(), title, cover, false);
+  }
+
+  static createFromDto(book: BookDto): Book {
+    this.ensureIsValidTitle(book.title);
+    this.ensureIsValidCover(book.pictureUrl);
+    return new Book(book.id, book.title, book.pictureUrl, book.completed);
   }
 
   updateTitle(title: string) {

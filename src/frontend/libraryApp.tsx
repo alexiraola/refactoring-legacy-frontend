@@ -1,7 +1,6 @@
 import * as React from "react";
-import { v4 as uuid } from 'uuid';
 import BookItem from "./Book";
-import { Book } from "./domain/book";
+import { Book, BookDto } from "./domain/book";
 
 type FilterType = 'all' | 'completed' | 'incomplete';
 
@@ -16,7 +15,7 @@ function isValidUrl(url: string) {
 }
 
 export class LibraryApp extends React.Component<any, any> {
-  collection: Book[] = [];
+  collection: BookDto[] = [];
   bookTitle = '';
   bookCover = '';
   counter = 0;
@@ -75,50 +74,36 @@ export class LibraryApp extends React.Component<any, any> {
     }
   }
 
-  update(index, bookTitle: string, bookCover: string) {
-    const minLength = 3; // Longitud mínima del texto
-    const maxLength = 100; // Longitud máxima del texto
-    const forbiddenWords = ['prohibited', 'forbidden', 'banned'];
+  update(bookDto: BookDto, bookTitle: string, bookCover: string) {
+    const index = this.collection.findIndex(b => b.id == bookDto.id);
+    const book = Book.createFromDto(bookDto);
 
-    if (!isValidUrl(bookCover)) {
-      alert('Error: The cover url is not valid');
-      return
-    }
-    const hasValidLength = bookTitle.length < minLength || bookTitle.length > maxLength;
-    if (hasValidLength) {
-      alert(`Error: The title must be between ${minLength} and ${maxLength} characters long.`);
-      return;
-    }
-    const isValidTitle = /[^a-zA-Z0-9\s]/.test(bookTitle);
-    if (isValidTitle) {
-      alert('Error: The title can only contain letters, numbers, and spaces.');
-      return;
-    }
-    const words = bookTitle.split(/\s+/);
-    const foundForbiddenWord = forbiddenWords.find(word => words.includes(word));
-    if (foundForbiddenWord) {
-      alert(`Error: The title cannot include the prohibited word "${foundForbiddenWord}"`);
-      return
-    }
+    try {
+      book.updateTitle(bookTitle);
+      book.updateCover(bookCover);
 
-    this.collection.forEach((book, i) => {
-      if (i !== index && book.title == this.bookTitle) {
-        alert('Error: The title is already in the collection.');
-        return;
-      }
-    })
+      this.collection.forEach((book, i) => {
+        if (i !== index && book.title == this.bookTitle) {
+          alert('Error: The title is already in the collection.');
+          return;
+        }
+      })
 
-    // Si pasa todas las validaciones, actualizar el libro
-    fetch(`http://localhost:3000/api/${this.collection[index].id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: bookTitle, pictureUrl: bookCover, completed: this.collection[index].completed }),
-    })
-      .then(response => response.json())
-      .then(data => {
-        this.collection[index] = data;
-        this.forceUpdate();
-      });
+      // Si pasa todas las validaciones, actualizar el libro
+      fetch(`http://localhost:3000/api/${book.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: book.title, pictureUrl: book.pictureUrl, completed: book.completed }),
+      })
+        .then(response => response.json())
+        .then(data => {
+          this.collection[index] = data;
+          this.forceUpdate();
+        });
+
+    } catch (e) {
+      alert(e.message);
+    }
   }
 
   delete(index) {
@@ -153,7 +138,7 @@ export class LibraryApp extends React.Component<any, any> {
     this.forceUpdate();
   }
 
-  getBooks() {
+  getBooks(): BookDto[] {
     var fBooks = [];
     for (var i = 0; i < this.collection.length; i++) {
       if (
@@ -199,11 +184,11 @@ export class LibraryApp extends React.Component<any, any> {
           <button data-testid="showUnreadBooks" className="library-button incomplete-filter" onClick={this.setFilter.bind(this, 'incomplete')}>Unread</button>
         </div>
         <ul data-testid="books" className="book-list">
-          {books.map((b, index) => <BookItem book={b}
+          {books.map((book, index) => <BookItem book={Book.createFromDto(book)}
             onMarkAsReadClicked={() => this.toggleComplete(index)}
             onDeleteClicked={() => this.delete(index)}
             onEdit={(title, cover) => {
-              this.update(index, title, cover);
+              this.update(book, title, cover);
             }}
           />
           )}
