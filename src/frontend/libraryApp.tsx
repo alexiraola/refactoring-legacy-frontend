@@ -1,6 +1,7 @@
 import * as React from "react";
 import BookItem from "./Book";
 import { Book, BookDto } from "./domain/book";
+import { filterBooks } from "./domain/services/FilterBooks";
 
 type FilterType = 'all' | 'completed' | 'incomplete';
 
@@ -138,22 +139,8 @@ export class LibraryApp extends React.Component<any, any> {
     this.forceUpdate();
   }
 
-  getBooks(): BookDto[] {
-    var fBooks = [];
-    for (var i = 0; i < this.collection.length; i++) {
-      if (
-        this.filter === 'all' ||
-        (this.filter === 'completed' && this.collection[i].completed) ||
-        (this.filter === 'incomplete' && !this.collection[i].completed)
-      ) {
-        fBooks.push(this.collection[i]);
-      }
-    }
-    return fBooks;
-  }
-
   render() {
-    const books = this.getBooks();
+    const books = filterBooks(this.collection, this.filter);
 
     return (
       <div className="app-container">
