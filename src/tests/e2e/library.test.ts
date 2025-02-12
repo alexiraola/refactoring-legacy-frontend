@@ -90,6 +90,20 @@ describe('Library App', () => {
 
     removeBook();
   });
+
+  it('should not be able to update a book with an invalid title', () => {
+    addBook('Book 1', 'https://example.com/image.jpg');
+    const newTitle = 'b';
+    editBook(newTitle, 'https://example.com/image.jpg');
+
+    cy.on('window.alert', str => {
+      expect(str).toBe('Error: The title must be between 3 and 100 characters long.')
+    })
+
+    cy.contains('[data-testid="book"]', newTitle).should('not.exist');
+
+    removeBook();
+  });
 });
 
 function addBook(title: string, cover: string) {
