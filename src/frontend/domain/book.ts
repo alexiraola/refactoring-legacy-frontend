@@ -41,6 +41,15 @@ export class Book {
     this.completed = !this.completed;
   }
 
+  toDto(): BookDto {
+    return {
+      id: this.id,
+      title: this.title,
+      pictureUrl: this.pictureUrl,
+      completed: this.completed
+    }
+  }
+
   private static ensureIsValidTitle(title: string) {
     const minTitleLength = 3;
     const maxTitleLength = 100;
