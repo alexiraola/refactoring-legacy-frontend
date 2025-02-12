@@ -33,4 +33,40 @@ describe('The Book', () => {
       Book.create('Book banned', 'https://example.com/cover.jpg');
     }).toThrow('Error: The title cannot include the prohibited word "banned"');
   });
+
+  it('should update the title of a book with a valid one', () => {
+    const book = Book.create('Book title', 'https://example.com/cover.jpg');
+
+    book.updateTitle('Another title');
+
+    expect(book.title).toBe('Another title');
+    expect(book.pictureUrl).toBe('https://example.com/cover.jpg');
+    expect(book.id).toMatch(/^[a-f\d]{8}-[a-f\d]{4}-4[a-f\d]{3}-[89aAbB][a-f\d]{3}-[a-f\d]{12}$/);
+  });
+
+  it('should not update the title if an invalid one is provided', () => {
+    const book = Book.create('Book title', 'https://example.com/cover.jpg');
+
+    expect(() => {
+      book.updateTitle('B');
+    }).toThrow('Error: The title must be between 3 and 100 characters long.');
+  });
+
+  it('should update the cover of a book with a valid one', () => {
+    const book = Book.create('Book title', 'https://example.com/cover.jpg');
+
+    book.updateCover('https://example.com/revoc.jpg');
+
+    expect(book.title).toBe('Book title');
+    expect(book.pictureUrl).toBe('https://example.com/revoc.jpg');
+    expect(book.id).toMatch(/^[a-f\d]{8}-[a-f\d]{4}-4[a-f\d]{3}-[89aAbB][a-f\d]{3}-[a-f\d]{12}$/);
+  });
+
+  it('should not update the cover if an invalid one is provided', () => {
+    const book = Book.create('Book title', 'https://example.com/cover.jpg');
+
+    expect(() => {
+      book.updateCover('B');
+    }).toThrow('Error: The cover url is not valid');
+  });
 });

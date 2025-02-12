@@ -3,8 +3,8 @@ import { v4 as uuid } from "uuid";
 export class Book {
   constructor(
     readonly id: string,
-    readonly title: string,
-    readonly pictureUrl: string,
+    public title: string,
+    public pictureUrl: string,
     public completed: boolean
   ) { }
 
@@ -12,6 +12,16 @@ export class Book {
     this.ensureIsValidTitle(title);
     this.ensureIsValidCover(cover);
     return new Book(uuid(), title, cover, false);
+  }
+
+  updateTitle(title: string) {
+    Book.ensureIsValidTitle(title);
+    this.title = title;
+  }
+
+  updateCover(cover: string) {
+    Book.ensureIsValidCover(cover);
+    this.pictureUrl = cover;
   }
 
   private static ensureIsValidTitle(title: string) {
