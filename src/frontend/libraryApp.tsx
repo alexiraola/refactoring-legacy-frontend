@@ -2,6 +2,7 @@ import * as React from "react";
 import BookItem from "./Book";
 import { Book, BookDto } from "./domain/book";
 import { filterBooks } from "./domain/services/FilterBooks";
+import { ApiBookRepository } from "./infrastructure/api.book.repository";
 
 type FilterType = 'all' | 'completed' | 'incomplete';
 
@@ -11,15 +12,14 @@ export class LibraryApp extends React.Component<any, any> {
   bookCover = '';
   counter = 0;
   filter: FilterType = 'all';
+  bookRepository = new ApiBookRepository('http://localhost:3000/api');
 
   constructor(props) {
     super(props);
-    fetch('http://localhost:3000/api/')
-      .then(response => response.json())
-      .then(data => {
-        this.collection = data;
-        this.forceUpdate();
-      })
+    this.bookRepository.getAll().then(data => {
+      this.collection = data.map(b => b.toDto());
+      this.forceUpdate();
+    })
       .catch(error => console.log(error));
   }
 
@@ -45,15 +45,10 @@ export class LibraryApp extends React.Component<any, any> {
           return;
         }
       })
-      // Si pasa todas las validaciones, agregar el "libro"
-      fetch('http://localhost:3000/api/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: book.id, title: book.title, pictureUrl: book.pictureUrl, completed: book.completed }),
-      })
-        .then(response => response.json())
-        .then(data => {
-          this.collection.push(data);
+
+      this.bookRepository.add(book)
+        .then(() => {
+          this.collection.push(book.toDto());
           this.bookTitle = '';
           this.bookCover = '';
           this.forceUpdate();
@@ -80,15 +75,9 @@ export class LibraryApp extends React.Component<any, any> {
         }
       })
 
-      // Si pasa todas las validaciones, actualizar el libro
-      fetch(`http://localhost:3000/api/${book.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: book.title, pictureUrl: book.pictureUrl, completed: book.completed }),
-      })
-        .then(response => response.json())
-        .then(data => {
-          this.collection[index] = data;
+      this.bookRepository.update(book)
+        .then(() => {
+          this.collection[index] = book.toDto();
           this.forceUpdate();
         });
 
@@ -97,8 +86,10 @@ export class LibraryApp extends React.Component<any, any> {
     }
   }
 
-  delete(index) {
-    fetch(`http://localhost:3000/api/${this.collection[index].id}`, { method: 'DELETE' })
+  delete(bookDto: BookDto) {
+    const index = this.collection.findIndex(b => b.id == bookDto.id);
+
+    this.bookRepository.remove(Book.createFromDto(bookDto))
       .then(() => {
         if (this.collection[index].completed) {
           this.counter--;
@@ -108,17 +99,16 @@ export class LibraryApp extends React.Component<any, any> {
       })
   }
 
-  toggleComplete(index) {
-    this.collection[index].completed = !this.collection[index].completed;
-    fetch(`http://localhost:3000/api/${this.collection[index].id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ completed: this.collection[index].completed }),
-    })
-      .then(response => response.json())
-      .then(data => {
+  toggleComplete(bookDto: BookDto) {
+    const index = this.collection.findIndex(b => b.id == bookDto.id);
+
+    const book = Book.createFromDto(bookDto);
+    book.toggleCompleted();
+    // this.collection[index].completed = !this.collection[index].completed;
+    this.bookRepository.update(book)
+      .then(() => {
         // this.collection[index] = data;
-        this.collection[index].completed ? this.counter++ : this.counter--;
+        this.collection[index] = book.toDto();
         this.forceUpdate();
       })
   }
@@ -162,8 +152,8 @@ export class LibraryApp extends React.Component<any, any> {
         </div>
         <ul data-testid="books" className="book-list">
           {books.map((book, index) => <BookItem book={Book.createFromDto(book)}
-            onMarkAsReadClicked={() => this.toggleComplete(index)}
-            onDeleteClicked={() => this.delete(index)}
+            onMarkAsReadClicked={() => this.toggleComplete(book)}
+            onDeleteClicked={() => this.delete(book)}
             onEdit={(title, cover) => {
               this.update(book, title, cover);
             }}
