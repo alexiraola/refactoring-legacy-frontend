@@ -35,16 +35,19 @@ export class LibraryApp extends React.Component<any, any> {
     this.forceUpdate();
   }
 
+  ensureThatBookIsNotRepeated(book: Book, books: BookDto[]) {
+    books.forEach(b => {
+      if (b.title == book.title) {
+        throw new Error('Error: The title is already in the collection.');
+      }
+    });
+  }
+
   add() {
     try {
       const book = Book.create(this.bookTitle, this.bookCover);
 
-      this.collection.forEach(book => {
-        if (book.title == this.bookTitle) {
-          alert('Error: The title is already in the collection.');
-          return;
-        }
-      })
+      this.ensureThatBookIsNotRepeated(book, this.collection);
 
       this.bookRepository.add(book)
         .then(() => {
@@ -68,12 +71,7 @@ export class LibraryApp extends React.Component<any, any> {
       book.updateTitle(bookTitle);
       book.updateCover(bookCover);
 
-      this.collection.forEach((book, i) => {
-        if (i !== index && book.title == this.bookTitle) {
-          alert('Error: The title is already in the collection.');
-          return;
-        }
-      })
+      this.ensureThatBookIsNotRepeated(book, this.collection);
 
       this.bookRepository.update(book)
         .then(() => {
