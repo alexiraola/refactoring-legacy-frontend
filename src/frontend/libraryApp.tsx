@@ -1,8 +1,8 @@
 import * as React from "react";
 import BookItem from "./Book";
 import { Book, BookDto } from "./domain/book";
-import { filterBooks } from "./domain/services/FilterBooks";
-import { ApiBookRepository } from "./infrastructure/api.book.repository";
+import { filterBooks } from "./domain/services/filter.books";
+import { Factory } from "./infrastructure/factory";
 
 type FilterType = 'all' | 'completed' | 'incomplete';
 
@@ -12,15 +12,18 @@ export class LibraryApp extends React.Component<any, any> {
   bookCover = '';
   counter = 0;
   filter: FilterType = 'all';
-  bookRepository = new ApiBookRepository('http://localhost:3000/api');
+  libraryService = Factory.createLibraryService();
 
   constructor(props) {
     super(props);
-    this.bookRepository.getAll().then(data => {
-      this.collection = data.map(b => b.toDto());
-      this.forceUpdate();
-    })
+
+    this.libraryService.getBooks().then(this.onGetBooks)
       .catch(error => console.log(error));
+  }
+
+  onGetBooks = (data: Book[]) => {
+    this.collection = data.map(b => b.toDto());
+    this.forceUpdate();
   }
 
   onTitleChange(event) {
@@ -35,82 +38,64 @@ export class LibraryApp extends React.Component<any, any> {
     this.forceUpdate();
   }
 
-  ensureThatBookIsNotRepeated(book: Book, books: BookDto[]) {
-    books.forEach(b => {
-      if (b.title == book.title) {
-        throw new Error('Error: The title is already in the collection.');
-      }
-    });
-  }
-
-  add() {
+  async add() {
     try {
-      const book = Book.create(this.bookTitle, this.bookCover);
-
-      this.ensureThatBookIsNotRepeated(book, this.collection);
-
-      this.bookRepository.add(book)
-        .then(() => {
-          this.collection.push(book.toDto());
-          this.bookTitle = '';
-          this.bookCover = '';
-          this.forceUpdate();
-        });
-
+      const book = await this.libraryService.addBook(this.collection.map(b => Book.createFromDto(b)), this.bookTitle, this.bookCover);
+      this.onAddBook(book);
     } catch (error) {
       alert(error.message);
       return;
     }
   }
 
-  update(bookDto: BookDto, bookTitle: string, bookCover: string) {
-    const index = this.collection.findIndex(b => b.id == bookDto.id);
-    const book = Book.createFromDto(bookDto);
+  onAddBook(book: Book) {
+    this.collection.push(book.toDto());
+    this.bookTitle = '';
+    this.bookCover = '';
+    this.forceUpdate();
+  }
 
+  async update(bookDto: BookDto, bookTitle: string, bookCover: string) {
     try {
-      book.updateTitle(bookTitle);
-      book.updateCover(bookCover);
-
-      this.ensureThatBookIsNotRepeated(book, this.collection);
-
-      this.bookRepository.update(book)
-        .then(() => {
-          this.collection[index] = book.toDto();
-          this.forceUpdate();
-        });
-
+      const book = await this.libraryService.updateBook(this.collection.map(b => Book.createFromDto(b)), bookDto, bookTitle, bookCover);
+      this.onUpdateBook(book);
     } catch (e) {
       alert(e.message);
     }
   }
 
-  delete(bookDto: BookDto) {
-    const index = this.collection.findIndex(b => b.id == bookDto.id);
-
-    this.bookRepository.remove(Book.createFromDto(bookDto))
-      .then(() => {
-        if (this.collection[index].completed) {
-          this.counter--;
-        }
-        this.collection.splice(index, 1);
-        this.forceUpdate();
-      })
+  onUpdateBook(book: Book) {
+    const index = this.collection.findIndex(b => b.id == book.id);
+    this.collection[index] = book.toDto();
+    this.forceUpdate();
   }
 
-  toggleComplete(bookDto: BookDto) {
-    const index = this.collection.findIndex(b => b.id == bookDto.id);
-
+  async delete(bookDto: BookDto) {
     const book = Book.createFromDto(bookDto);
-    book.toggleCompleted();
-    // this.collection[index].completed = !this.collection[index].completed;
-    this.bookRepository.update(book)
-      .then(() => {
-        // this.collection[index] = data;
-        this.collection[index] = book.toDto();
-        this.forceUpdate();
-      })
+    await this.libraryService.deleteBook(book);
+    this.onDeleteBook(book);
   }
 
+  onDeleteBook = (book: Book) => {
+    const index = this.collection.findIndex(b => b.id == book.id);
+
+    if (this.collection[index].completed) {
+      this.counter--;
+    }
+    this.collection.splice(index, 1);
+    this.forceUpdate();
+  }
+
+  async toggleComplete(bookDto: BookDto) {
+    const book = await this.libraryService.toggleComplete(Book.createFromDto(bookDto));
+    this.onToggleComplete(book);
+  }
+
+  onToggleComplete(book: Book) {
+    const index = this.collection.findIndex(b => b.id == book.id);
+    this.collection[index] = book.toDto();
+    this.forceUpdate();
+  }
 
   setFilter(filter) {
     this.filter = filter;

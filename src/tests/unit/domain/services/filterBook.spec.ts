@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Book } from "../../../../frontend/domain/book";
-import { filterBooks } from "../../../../frontend/domain/services/FilterBooks";
+import { filterBooks } from "../../../../frontend/domain/services/filter.books";
 
 describe('Filter book', () => {
   it('retrieves all books when the filter is all', () => {
