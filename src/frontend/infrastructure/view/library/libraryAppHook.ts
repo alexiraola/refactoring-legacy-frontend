@@ -1,5 +1,5 @@
 import { filterBooks } from "../../../domain/services/filter.books";
-import { Book, BookDto } from "../../../domain/book";
+import { Book } from "../../../domain/book";
 import { LibraryService } from "../../../application/library.service";
 import { useState } from "react";
 import { countCompletedBooks } from "../../../domain/services/count.book";
@@ -7,14 +7,14 @@ import { countCompletedBooks } from "../../../domain/services/count.book";
 export type FilterType = 'all' | 'completed' | 'incomplete';
 
 type LibraryState = {
-  readonly collection: ReadonlyArray<BookDto>;
+  readonly books: ReadonlyArray<Book>;
   readonly bookTitle: string;
   readonly bookCover: string;
   readonly filter: FilterType;
 }
 
 const initialState = (): LibraryState => ({
-  collection: [],
+  books: [],
   bookTitle: '',
   bookCover: '',
   filter: 'all'
@@ -24,45 +24,44 @@ export function useLibraryApp(service: LibraryService) {
   const [state, setState] = useState(initialState());
 
   const initialize = async () => {
-    const data = await service.getBooks();
+    const books = await service.getBooks();
 
-    setState({ ...state, collection: data.map(b => b.toDto()) });
+    setState({ ...state, books: books });
   }
 
   const add = async () => {
     try {
-      const book = await service.addBook(state.collection.map(b => Book.createFromDto(b)), state.bookTitle, state.bookCover);
+      const book = await service.addBook(state.books, state.bookTitle, state.bookCover);
 
-      setState({ ...state, collection: [...state.collection, book.toDto()], bookTitle: '', bookCover: '' });
+      setState({ ...state, books: [...state.books, book], bookTitle: '', bookCover: '' });
     } catch (error) {
       alert(error.message);
       return;
     }
   }
 
-  const update = async (bookDto: BookDto, bookTitle: string, bookCover: string) => {
+  const update = async (book: Book, bookTitle: string, bookCover: string) => {
     try {
-      const book = await service.updateBook(state.collection.map(b => Book.createFromDto(b)), bookDto, bookTitle, bookCover);
-      const newBooks = state.collection.map(b => b.id == book.id ? book.toDto() : b);
-      setState({ ...state, collection: newBooks });
+      const updatedBook = await service.updateBook(state.books as Book[], book, bookTitle, bookCover);
+      const newBooks = state.books.map(b => b.equals(updatedBook) ? updatedBook : b);
+      setState({ ...state, books: newBooks });
     } catch (e) {
       alert(e.message);
     }
   }
 
-  const deleteBook = async (bookDto: BookDto) => {
-    const book = Book.createFromDto(bookDto);
+  const deleteBook = async (book: Book) => {
     await service.deleteBook(book);
 
-    const newBooks = state.collection.filter(b => b.id !== book.id);
+    const newBooks = state.books.filter(b => !b.equals(book));
 
-    setState({ ...state, collection: newBooks });
+    setState({ ...state, books: newBooks });
   }
 
-  const toggleComplete = async (bookDto: BookDto) => {
-    const book = await service.toggleComplete(Book.createFromDto(bookDto));
-    const newBooks = state.collection.map(b => b.id == book.id ? book.toDto() : b);
-    setState({ ...state, collection: newBooks });
+  const toggleComplete = async (book: Book) => {
+    const changedBook = await service.toggleComplete(book);
+    const newBooks = state.books.map(b => b.equals(changedBook) ? changedBook : b);
+    setState({ ...state, books: newBooks });
   }
 
   const setFilter = (filter: FilterType) => {
@@ -77,12 +76,12 @@ export function useLibraryApp(service: LibraryService) {
     setState({ ...state, bookCover: event.target.value });
   }
 
-  const books = filterBooks(state.collection, state.filter);
+  const books = filterBooks(state.books as Book[], state.filter);
 
   return {
     bookTitle: state.bookTitle,
     bookCover: state.bookCover,
-    counter: countCompletedBooks(state.collection as BookDto[]),
+    counter: countCompletedBooks(state.books as Book[]),
     initialize,
     add,
     books,

@@ -1,8 +1,8 @@
-import { BookDto } from "../book";
+import { Book } from "../book";
 
 export type FilterType = 'all' | 'completed' | 'incomplete';
 
-export function filterBooks(books: BookDto[], filterType: FilterType): BookDto[] {
+export function filterBooks(books: Book[], filterType: FilterType): Book[] {
   return books.filter(book => {
     switch (filterType) {
       case 'all':

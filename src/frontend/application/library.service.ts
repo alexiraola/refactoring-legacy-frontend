@@ -1,4 +1,3 @@
-import { BookDTO } from "../../backend/views/BookDTO";
 import { Book } from "../domain/book";
 import { BookRepository } from "../domain/book.repository";
 
@@ -19,9 +18,7 @@ export class LibraryService {
     return book;
   }
 
-  async updateBook(books: Book[], bookDto: BookDTO, title: string, cover: string) {
-    const book = Book.createFromDto(bookDto);
-
+  async updateBook(books: Book[], book: Book, title: string, cover: string) {
     book.updateTitle(title);
     book.updateCover(cover);
 

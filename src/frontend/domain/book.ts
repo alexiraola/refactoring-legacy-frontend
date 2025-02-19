@@ -9,7 +9,7 @@ export type BookDto = {
 
 export class Book {
   constructor(
-    readonly id: string,
+    private readonly id: string,
     public title: string,
     public pictureUrl: string,
     public completed: boolean
@@ -39,6 +39,10 @@ export class Book {
 
   toggleCompleted() {
     this.completed = !this.completed;
+  }
+
+  equals(otherBook: Book) {
+    return this.id === otherBook.id;
   }
 
   toDto(): BookDto {

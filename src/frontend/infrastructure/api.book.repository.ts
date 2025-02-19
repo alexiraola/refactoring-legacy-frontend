@@ -19,7 +19,7 @@ export class ApiBookRepository implements BookRepository {
   }
 
   async update(book: Book): Promise<void> {
-    await fetch(`${this.baseUrl}/${book.id}`, {
+    await fetch(`${this.baseUrl}/${book.toDto().id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(book.toDto()),
@@ -27,6 +27,6 @@ export class ApiBookRepository implements BookRepository {
   }
 
   async remove(book: Book): Promise<void> {
-    await fetch(`${this.baseUrl}/${book.id}`, { method: 'DELETE' });
+    await fetch(`${this.baseUrl}/${book.toDto().id}`, { method: 'DELETE' });
   }
 }

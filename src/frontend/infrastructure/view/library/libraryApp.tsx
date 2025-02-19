@@ -2,7 +2,6 @@ import * as React from "react";
 import { useEffect } from "react";
 import { LibraryService } from "../../../application/library.service";
 import BookItem from "./Book";
-import { Book } from "../../../domain/book";
 import { useLibraryApp } from "./libraryAppHook";
 
 type LibraryProps = { service: LibraryService };
@@ -43,7 +42,7 @@ export const LibraryApp = ({ service }: LibraryProps) => {
         <button data-testid="showUnreadBooks" className="library-button incomplete-filter" onClick={() => hook.setFilter('incomplete')}>Unread</button>
       </div>
       <ul data-testid="books" className="book-list">
-        {hook.books.map(book => <BookItem book={Book.createFromDto(book)}
+        {hook.books.map(book => <BookItem book={book}
           onMarkAsReadClicked={() => hook.toggleComplete(book)}
           onDeleteClicked={() => hook.deleteBook(book)}
           onEdit={(title, cover) => {

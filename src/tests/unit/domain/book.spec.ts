@@ -7,7 +7,7 @@ describe('The Book', () => {
 
     expect(book.title).toBe('Book title');
     expect(book.pictureUrl).toBe('https://example.com/cover.jpg');
-    expect(book.id).toMatch(/^[a-f\d]{8}-[a-f\d]{4}-4[a-f\d]{3}-[89aAbB][a-f\d]{3}-[a-f\d]{12}$/);
+    expect(book.toDto().id).toMatch(/^[a-f\d]{8}-[a-f\d]{4}-4[a-f\d]{3}-[89aAbB][a-f\d]{3}-[a-f\d]{12}$/);
   });
 
   it('should not create a Book with an invalid cover url', () => {
@@ -41,7 +41,7 @@ describe('The Book', () => {
 
     expect(book.title).toBe('Another title');
     expect(book.pictureUrl).toBe('https://example.com/cover.jpg');
-    expect(book.id).toMatch(/^[a-f\d]{8}-[a-f\d]{4}-4[a-f\d]{3}-[89aAbB][a-f\d]{3}-[a-f\d]{12}$/);
+    expect(book.toDto().id).toMatch(/^[a-f\d]{8}-[a-f\d]{4}-4[a-f\d]{3}-[89aAbB][a-f\d]{3}-[a-f\d]{12}$/);
   });
 
   it('should not update the title if an invalid one is provided', () => {
@@ -59,7 +59,7 @@ describe('The Book', () => {
 
     expect(book.title).toBe('Book title');
     expect(book.pictureUrl).toBe('https://example.com/revoc.jpg');
-    expect(book.id).toMatch(/^[a-f\d]{8}-[a-f\d]{4}-4[a-f\d]{3}-[89aAbB][a-f\d]{3}-[a-f\d]{12}$/);
+    expect(book.toDto().id).toMatch(/^[a-f\d]{8}-[a-f\d]{4}-4[a-f\d]{3}-[89aAbB][a-f\d]{3}-[a-f\d]{12}$/);
   });
 
   it('should not update the cover if an invalid one is provided', () => {
