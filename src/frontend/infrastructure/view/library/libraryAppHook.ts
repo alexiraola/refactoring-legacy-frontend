@@ -2,22 +2,21 @@ import { filterBooks } from "../../../domain/services/filter.books";
 import { Book, BookDto } from "../../../domain/book";
 import { LibraryService } from "../../../application/library.service";
 import { useState } from "react";
+import { countCompletedBooks } from "../../../domain/services/count.book";
 
 export type FilterType = 'all' | 'completed' | 'incomplete';
 
 type LibraryState = {
-  collection: BookDto[];
-  bookTitle: string;
-  bookCover: string;
-  counter: number;
-  filter: FilterType;
+  readonly collection: BookDto[];
+  readonly bookTitle: string;
+  readonly bookCover: string;
+  readonly filter: FilterType;
 }
 
 const initialState = (): LibraryState => ({
   collection: [],
   bookTitle: '',
   bookCover: '',
-  counter: 0,
   filter: 'all'
 });
 
@@ -57,9 +56,6 @@ export function useLibraryApp(service: LibraryService) {
     await service.deleteBook(book);
     const index = state.collection.findIndex(b => b.id == book.id);
 
-    if (state.collection[index].completed) {
-      setState({ ...state, counter: state.counter-- });
-    }
     state.collection.splice(index, 1);
 
     setState({ ...state, collection: [...state.collection] });
@@ -85,10 +81,11 @@ export function useLibraryApp(service: LibraryService) {
   }
 
   const books = filterBooks(state.collection, state.filter);
+
   return {
     bookTitle: state.bookTitle,
     bookCover: state.bookCover,
-    counter: state.counter,
+    counter: countCompletedBooks(state.collection),
     initialize,
     add,
     books,
