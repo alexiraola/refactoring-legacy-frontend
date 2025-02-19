@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useEffect, useState } from "react";
 import { LibraryService } from "./application/library.service";
 import BookItem from "./Book";
 import { Book, BookDto } from "./domain/book";
@@ -15,127 +16,121 @@ type LibraryState = {
   filter: FilterType;
 }
 
-export class LibraryApp extends React.Component<LibraryProps, LibraryState> {
-  collection: BookDto[] = [];
-  bookTitle = '';
-  bookCover = '';
-  counter = 0;
-  filter: FilterType = 'all';
+const initialState = (): LibraryState => ({
+  collection: [],
+  bookTitle: '',
+  bookCover: '',
+  counter: 0,
+  filter: 'all'
+});
 
-  constructor(props: LibraryProps) {
-    super(props);
+export const LibraryApp = ({ service }: LibraryProps) => {
+  const [state, setState] = useState(initialState());
 
-    this.initialize();
+  useEffect(() => {
+    initialize();
+  }, []);
+
+  const initialize = async () => {
+    const data = await service.getBooks();
+
+    setState({ ...state, collection: data.map(b => b.toDto()) });
   }
 
-  async initialize() {
-    const data = await this.props.service.getBooks();
-    this.collection = data.map(b => b.toDto());
-    this.forceUpdate();
-  }
-
-  onTitleChange(event) {
-    var value = event.target.value;
-    this.bookTitle = value;
-    this.forceUpdate();
-  }
-
-  onCoverChange(event) {
-    var value = event.target.value;
-    this.bookCover = value;
-    this.forceUpdate();
-  }
-
-  async add() {
+  const add = async () => {
     try {
-      const book = await this.props.service.addBook(this.collection.map(b => Book.createFromDto(b)), this.bookTitle, this.bookCover);
-      this.collection.push(book.toDto());
-      this.bookTitle = '';
-      this.bookCover = '';
-      this.forceUpdate();
+      const book = await service.addBook(state.collection.map(b => Book.createFromDto(b)), state.bookTitle, state.bookCover);
+
+      setState({ ...state, collection: [...state.collection, book.toDto()], bookTitle: '', bookCover: '' });
     } catch (error) {
       alert(error.message);
       return;
     }
   }
 
-  async update(bookDto: BookDto, bookTitle: string, bookCover: string) {
+  const update = async (bookDto: BookDto, bookTitle: string, bookCover: string) => {
     try {
-      const book = await this.props.service.updateBook(this.collection.map(b => Book.createFromDto(b)), bookDto, bookTitle, bookCover);
-      const index = this.collection.findIndex(b => b.id == book.id);
-      this.collection[index] = book.toDto();
-      this.forceUpdate();
+      const book = await service.updateBook(state.collection.map(b => Book.createFromDto(b)), bookDto, bookTitle, bookCover);
+      const index = state.collection.findIndex(b => b.id == book.id);
+      state.collection[index] = book.toDto();
+      setState({ ...state, collection: [...state.collection] });
     } catch (e) {
       alert(e.message);
     }
   }
 
-  async delete(bookDto: BookDto) {
+  const deleteBook = async (bookDto: BookDto) => {
     const book = Book.createFromDto(bookDto);
-    await this.props.service.deleteBook(book);
-    const index = this.collection.findIndex(b => b.id == book.id);
+    await service.deleteBook(book);
+    const index = state.collection.findIndex(b => b.id == book.id);
 
-    if (this.collection[index].completed) {
-      this.counter--;
+    if (state.collection[index].completed) {
+      setState({ ...state, counter: state.counter-- });
     }
-    this.collection.splice(index, 1);
-    this.forceUpdate();
+    state.collection.splice(index, 1);
+
+    setState({ ...state, collection: [...state.collection] });
   }
 
-  async toggleComplete(bookDto: BookDto) {
-    const book = await this.props.service.toggleComplete(Book.createFromDto(bookDto));
-    const index = this.collection.findIndex(b => b.id == book.id);
-    this.collection[index] = book.toDto();
-    this.forceUpdate();
+  const toggleComplete = async (bookDto: BookDto) => {
+    const book = await service.toggleComplete(Book.createFromDto(bookDto));
+    const index = state.collection.findIndex(b => b.id == book.id);
+    state.collection[index] = book.toDto();
+    setState({ ...state, collection: [...state.collection] });
   }
 
-  setFilter(filter) {
-    this.filter = filter;
-    this.forceUpdate();
+  const setFilter = (filter: FilterType) => {
+    setState({ ...state, filter });
   }
 
-  render() {
-    const books = filterBooks(this.collection, this.filter);
+  const onTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setState({ ...state, bookTitle: event.target.value });
+  }
 
-    return (
-      <div className="app-container">
-        <h1>LIBRARY APP</h1>
-        <div>
-          <input
-            data-testid="title"
-            className="library-input"
-            value={this.bookTitle}
-            placeholder={'Book Title'}
-            onChange={this.onTitleChange.bind(this)}
-          />
-          <input
-            data-testid="cover"
-            className="library-input"
-            value={this.bookCover}
-            placeholder={'Cover Url'}
-            onChange={this.onCoverChange.bind(this)}
-          />
-        </div>
-        <button data-testid="add" className="library-button add-book-button" onClick={this.add.bind(this)}>
-          Add Book
-        </button>
-        <h2>Books Read: {this.counter}</h2>
-        <div>
-          <button data-testid="showAllBooks" className="library-button all-filter" onClick={this.setFilter.bind(this, 'all')}>All</button>
-          <button data-testid="showReadBooks" className="library-button completed-filter" onClick={this.setFilter.bind(this, 'completed')}>Read</button>
-          <button data-testid="showUnreadBooks" className="library-button incomplete-filter" onClick={this.setFilter.bind(this, 'incomplete')}>Unread</button>
-        </div>
-        <ul data-testid="books" className="book-list">
-          {books.map((book, index) => <BookItem book={Book.createFromDto(book)}
-            onMarkAsReadClicked={() => this.toggleComplete(book)}
-            onDeleteClicked={() => this.delete(book)}
-            onEdit={(title, cover) => {
-              this.update(book, title, cover);
-            }}
-          />
-          )}
-        </ul>
+  const onCoverChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setState({ ...state, bookCover: event.target.value });
+  }
+
+  const books = filterBooks(state.collection, state.filter);
+
+  return (
+    <div className="app-container">
+      <h1>LIBRARY APP</h1>
+      <div>
+        <input
+          data-testid="title"
+          className="library-input"
+          value={state.bookTitle}
+          placeholder={'Book Title'}
+          onChange={onTitleChange}
+        />
+        <input
+          data-testid="cover"
+          className="library-input"
+          value={state.bookCover}
+          placeholder={'Cover Url'}
+          onChange={onCoverChange}
+        />
       </div>
-    );
-  }
+      <button data-testid="add" className="library-button add-book-button" onClick={() => add()}>
+        Add Book
+      </button>
+      <h2>Books Read: {state.counter}</h2>
+      <div>
+        <button data-testid="showAllBooks" className="library-button all-filter" onClick={() => setFilter('all')}>All</button>
+        <button data-testid="showReadBooks" className="library-button completed-filter" onClick={() => setFilter('completed')}>Read</button>
+        <button data-testid="showUnreadBooks" className="library-button incomplete-filter" onClick={() => setFilter('incomplete')}>Unread</button>
+      </div>
+      <ul data-testid="books" className="book-list">
+        {books.map((book, index) => <BookItem book={Book.createFromDto(book)}
+          onMarkAsReadClicked={() => toggleComplete(book)}
+          onDeleteClicked={() => deleteBook(book)}
+          onEdit={(title, cover) => {
+            update(book, title, cover);
+          }}
+        />
+        )}
+      </ul>
+    </div>
+  );
 }
