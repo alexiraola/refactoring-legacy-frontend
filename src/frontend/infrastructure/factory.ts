@@ -1,4 +1,4 @@
-import { LibraryService } from "../domain/services/library.service";
+import { LibraryService } from "../application/library.service";
 import { ApiBookRepository } from "./api.book.repository";
 
 export class Factory {

@@ -1,23 +1,24 @@
 import * as React from "react";
+import { LibraryService } from "./application/library.service";
 import BookItem from "./Book";
 import { Book, BookDto } from "./domain/book";
 import { filterBooks } from "./domain/services/filter.books";
-import { Factory } from "./infrastructure/factory";
 
 type FilterType = 'all' | 'completed' | 'incomplete';
 
-export class LibraryApp extends React.Component<any, any> {
+type LibraryProps = { service: LibraryService };
+
+export class LibraryApp extends React.Component<LibraryProps, any> {
   collection: BookDto[] = [];
   bookTitle = '';
   bookCover = '';
   counter = 0;
   filter: FilterType = 'all';
-  libraryService = Factory.createLibraryService();
 
-  constructor(props) {
+  constructor(props: LibraryProps) {
     super(props);
 
-    this.libraryService.getBooks().then(this.onGetBooks)
+    this.props.service.getBooks().then(this.onGetBooks)
       .catch(error => console.log(error));
   }
 
@@ -40,7 +41,7 @@ export class LibraryApp extends React.Component<any, any> {
 
   async add() {
     try {
-      const book = await this.libraryService.addBook(this.collection.map(b => Book.createFromDto(b)), this.bookTitle, this.bookCover);
+      const book = await this.props.service.addBook(this.collection.map(b => Book.createFromDto(b)), this.bookTitle, this.bookCover);
       this.onAddBook(book);
     } catch (error) {
       alert(error.message);
@@ -57,7 +58,7 @@ export class LibraryApp extends React.Component<any, any> {
 
   async update(bookDto: BookDto, bookTitle: string, bookCover: string) {
     try {
-      const book = await this.libraryService.updateBook(this.collection.map(b => Book.createFromDto(b)), bookDto, bookTitle, bookCover);
+      const book = await this.props.service.updateBook(this.collection.map(b => Book.createFromDto(b)), bookDto, bookTitle, bookCover);
       this.onUpdateBook(book);
     } catch (e) {
       alert(e.message);
@@ -72,7 +73,7 @@ export class LibraryApp extends React.Component<any, any> {
 
   async delete(bookDto: BookDto) {
     const book = Book.createFromDto(bookDto);
-    await this.libraryService.deleteBook(book);
+    await this.props.service.deleteBook(book);
     this.onDeleteBook(book);
   }
 
@@ -87,7 +88,7 @@ export class LibraryApp extends React.Component<any, any> {
   }
 
   async toggleComplete(bookDto: BookDto) {
-    const book = await this.libraryService.toggleComplete(Book.createFromDto(bookDto));
+    const book = await this.props.service.toggleComplete(Book.createFromDto(bookDto));
     this.onToggleComplete(book);
   }
 

@@ -1,6 +1,6 @@
-import { BookDTO } from "../../../backend/views/BookDTO";
-import { Book } from "../book";
-import { BookRepository } from "../book.repository";
+import { BookDTO } from "../../backend/views/BookDTO";
+import { Book } from "../domain/book";
+import { BookRepository } from "../domain/book.repository";
 
 export class LibraryService {
   constructor(private readonly bookRepository: BookRepository) { }
