@@ -7,8 +7,15 @@ import { filterBooks } from "./domain/services/filter.books";
 type FilterType = 'all' | 'completed' | 'incomplete';
 
 type LibraryProps = { service: LibraryService };
+type LibraryState = {
+  collection: BookDto[];
+  bookTitle: string;
+  bookCover: string;
+  counter: number;
+  filter: FilterType;
+}
 
-export class LibraryApp extends React.Component<LibraryProps, any> {
+export class LibraryApp extends React.Component<LibraryProps, LibraryState> {
   collection: BookDto[] = [];
   bookTitle = '';
   bookCover = '';
@@ -18,11 +25,11 @@ export class LibraryApp extends React.Component<LibraryProps, any> {
   constructor(props: LibraryProps) {
     super(props);
 
-    this.props.service.getBooks().then(this.onGetBooks)
-      .catch(error => console.log(error));
+    this.initialize();
   }
 
-  onGetBooks = (data: Book[]) => {
+  async initialize() {
+    const data = await this.props.service.getBooks();
     this.collection = data.map(b => b.toDto());
     this.forceUpdate();
   }
@@ -42,42 +49,30 @@ export class LibraryApp extends React.Component<LibraryProps, any> {
   async add() {
     try {
       const book = await this.props.service.addBook(this.collection.map(b => Book.createFromDto(b)), this.bookTitle, this.bookCover);
-      this.onAddBook(book);
+      this.collection.push(book.toDto());
+      this.bookTitle = '';
+      this.bookCover = '';
+      this.forceUpdate();
     } catch (error) {
       alert(error.message);
       return;
     }
   }
 
-  onAddBook(book: Book) {
-    this.collection.push(book.toDto());
-    this.bookTitle = '';
-    this.bookCover = '';
-    this.forceUpdate();
-  }
-
   async update(bookDto: BookDto, bookTitle: string, bookCover: string) {
     try {
       const book = await this.props.service.updateBook(this.collection.map(b => Book.createFromDto(b)), bookDto, bookTitle, bookCover);
-      this.onUpdateBook(book);
+      const index = this.collection.findIndex(b => b.id == book.id);
+      this.collection[index] = book.toDto();
+      this.forceUpdate();
     } catch (e) {
       alert(e.message);
     }
   }
 
-  onUpdateBook(book: Book) {
-    const index = this.collection.findIndex(b => b.id == book.id);
-    this.collection[index] = book.toDto();
-    this.forceUpdate();
-  }
-
   async delete(bookDto: BookDto) {
     const book = Book.createFromDto(bookDto);
     await this.props.service.deleteBook(book);
-    this.onDeleteBook(book);
-  }
-
-  onDeleteBook = (book: Book) => {
     const index = this.collection.findIndex(b => b.id == book.id);
 
     if (this.collection[index].completed) {
@@ -89,10 +84,6 @@ export class LibraryApp extends React.Component<LibraryProps, any> {
 
   async toggleComplete(bookDto: BookDto) {
     const book = await this.props.service.toggleComplete(Book.createFromDto(bookDto));
-    this.onToggleComplete(book);
-  }
-
-  onToggleComplete(book: Book) {
     const index = this.collection.findIndex(b => b.id == book.id);
     this.collection[index] = book.toDto();
     this.forceUpdate();
