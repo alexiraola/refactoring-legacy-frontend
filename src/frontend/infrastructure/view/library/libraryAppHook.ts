@@ -26,12 +26,12 @@ export function useLibraryApp(service: LibraryService) {
   const initialize = async () => {
     const books = await service.getBooks();
 
-    setState({ ...state, books: books });
+    setState({ ...state, books });
   }
 
   const add = async () => {
     try {
-      const book = await service.addBook(state.books, state.bookTitle, state.bookCover);
+      const book = await service.addBook(state.books as Book[], state.bookTitle, state.bookCover);
 
       setState({ ...state, books: [...state.books, book], bookTitle: '', bookCover: '' });
     } catch (error) {
@@ -43,8 +43,8 @@ export function useLibraryApp(service: LibraryService) {
   const update = async (book: Book, bookTitle: string, bookCover: string) => {
     try {
       const updatedBook = await service.updateBook(state.books as Book[], book, bookTitle, bookCover);
-      const newBooks = state.books.map(b => b.equals(updatedBook) ? updatedBook : b);
-      setState({ ...state, books: newBooks });
+      const books = state.books.map(book => book.equals(updatedBook) ? updatedBook : book);
+      setState({ ...state, books });
     } catch (e) {
       alert(e.message);
     }
@@ -53,15 +53,15 @@ export function useLibraryApp(service: LibraryService) {
   const deleteBook = async (book: Book) => {
     await service.deleteBook(book);
 
-    const newBooks = state.books.filter(b => !b.equals(book));
+    const books = state.books.filter(book => !book.equals(book));
 
-    setState({ ...state, books: newBooks });
+    setState({ ...state, books });
   }
 
   const toggleComplete = async (book: Book) => {
     const changedBook = await service.toggleComplete(book);
-    const newBooks = state.books.map(b => b.equals(changedBook) ? changedBook : b);
-    setState({ ...state, books: newBooks });
+    const books = state.books.map(book => book.equals(changedBook) ? changedBook : book);
+    setState({ ...state, books });
   }
 
   const setFilter = (filter: FilterType) => {
