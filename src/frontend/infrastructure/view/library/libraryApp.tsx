@@ -1,9 +1,9 @@
 import * as React from "react";
 import { useEffect, useState } from "react";
-import { LibraryService } from "./application/library.service";
+import { LibraryService } from "../../../application/library.service";
 import BookItem from "./Book";
-import { Book, BookDto } from "./domain/book";
-import { filterBooks } from "./domain/services/filter.books";
+import { Book, BookDto } from "../../../domain/book";
+import { filterBooks } from "../../../domain/services/filter.books";
 
 type FilterType = 'all' | 'completed' | 'incomplete';
 
