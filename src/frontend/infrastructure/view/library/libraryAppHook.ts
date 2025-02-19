@@ -7,7 +7,7 @@ import { countCompletedBooks } from "../../../domain/services/count.book";
 export type FilterType = 'all' | 'completed' | 'incomplete';
 
 type LibraryState = {
-  readonly collection: BookDto[];
+  readonly collection: ReadonlyArray<BookDto>;
   readonly bookTitle: string;
   readonly bookCover: string;
   readonly filter: FilterType;
@@ -43,9 +43,8 @@ export function useLibraryApp(service: LibraryService) {
   const update = async (bookDto: BookDto, bookTitle: string, bookCover: string) => {
     try {
       const book = await service.updateBook(state.collection.map(b => Book.createFromDto(b)), bookDto, bookTitle, bookCover);
-      const index = state.collection.findIndex(b => b.id == book.id);
-      state.collection[index] = book.toDto();
-      setState({ ...state, collection: [...state.collection] });
+      const newBooks = state.collection.map(b => b.id == book.id ? book.toDto() : b);
+      setState({ ...state, collection: newBooks });
     } catch (e) {
       alert(e.message);
     }
@@ -54,18 +53,16 @@ export function useLibraryApp(service: LibraryService) {
   const deleteBook = async (bookDto: BookDto) => {
     const book = Book.createFromDto(bookDto);
     await service.deleteBook(book);
-    const index = state.collection.findIndex(b => b.id == book.id);
 
-    state.collection.splice(index, 1);
+    const newBooks = state.collection.filter(b => b.id !== book.id);
 
-    setState({ ...state, collection: [...state.collection] });
+    setState({ ...state, collection: newBooks });
   }
 
   const toggleComplete = async (bookDto: BookDto) => {
     const book = await service.toggleComplete(Book.createFromDto(bookDto));
-    const index = state.collection.findIndex(b => b.id == book.id);
-    state.collection[index] = book.toDto();
-    setState({ ...state, collection: [...state.collection] });
+    const newBooks = state.collection.map(b => b.id == book.id ? book.toDto() : b);
+    setState({ ...state, collection: newBooks });
   }
 
   const setFilter = (filter: FilterType) => {
@@ -85,7 +82,7 @@ export function useLibraryApp(service: LibraryService) {
   return {
     bookTitle: state.bookTitle,
     bookCover: state.bookCover,
-    counter: countCompletedBooks(state.collection),
+    counter: countCompletedBooks(state.collection as BookDto[]),
     initialize,
     add,
     books,
