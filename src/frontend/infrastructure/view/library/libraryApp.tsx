@@ -24,12 +24,8 @@ const initialState = (): LibraryState => ({
   filter: 'all'
 });
 
-export const LibraryApp = ({ service }: LibraryProps) => {
+function useLibraryApp(service: LibraryService) {
   const [state, setState] = useState(initialState());
-
-  useEffect(() => {
-    initialize();
-  }, []);
 
   const initialize = async () => {
     const data = await service.getBooks();
@@ -92,6 +88,29 @@ export const LibraryApp = ({ service }: LibraryProps) => {
   }
 
   const books = filterBooks(state.collection, state.filter);
+  return {
+    bookTitle: state.bookTitle,
+    bookCover: state.bookCover,
+    counter: state.counter,
+    initialize,
+    add,
+    books,
+    deleteBook,
+    onCoverChange,
+    onTitleChange,
+    setFilter,
+    toggleComplete,
+    update
+  };
+}
+
+
+export const LibraryApp = ({ service }: LibraryProps) => {
+  const hook = useLibraryApp(service);
+
+  useEffect(() => {
+    hook.initialize();
+  }, []);
 
   return (
     <div className="app-container">
@@ -100,33 +119,33 @@ export const LibraryApp = ({ service }: LibraryProps) => {
         <input
           data-testid="title"
           className="library-input"
-          value={state.bookTitle}
+          value={hook.bookTitle}
           placeholder={'Book Title'}
-          onChange={onTitleChange}
+          onChange={hook.onTitleChange}
         />
         <input
           data-testid="cover"
           className="library-input"
-          value={state.bookCover}
+          value={hook.bookCover}
           placeholder={'Cover Url'}
-          onChange={onCoverChange}
+          onChange={hook.onCoverChange}
         />
       </div>
-      <button data-testid="add" className="library-button add-book-button" onClick={() => add()}>
+      <button data-testid="add" className="library-button add-book-button" onClick={() => hook.add()}>
         Add Book
       </button>
-      <h2>Books Read: {state.counter}</h2>
+      <h2>Books Read: {hook.counter}</h2>
       <div>
-        <button data-testid="showAllBooks" className="library-button all-filter" onClick={() => setFilter('all')}>All</button>
-        <button data-testid="showReadBooks" className="library-button completed-filter" onClick={() => setFilter('completed')}>Read</button>
-        <button data-testid="showUnreadBooks" className="library-button incomplete-filter" onClick={() => setFilter('incomplete')}>Unread</button>
+        <button data-testid="showAllBooks" className="library-button all-filter" onClick={() => hook.setFilter('all')}>All</button>
+        <button data-testid="showReadBooks" className="library-button completed-filter" onClick={() => hook.setFilter('completed')}>Read</button>
+        <button data-testid="showUnreadBooks" className="library-button incomplete-filter" onClick={() => hook.setFilter('incomplete')}>Unread</button>
       </div>
       <ul data-testid="books" className="book-list">
-        {books.map((book, index) => <BookItem book={Book.createFromDto(book)}
-          onMarkAsReadClicked={() => toggleComplete(book)}
-          onDeleteClicked={() => deleteBook(book)}
+        {hook.books.map(book => <BookItem book={Book.createFromDto(book)}
+          onMarkAsReadClicked={() => hook.toggleComplete(book)}
+          onDeleteClicked={() => hook.deleteBook(book)}
           onEdit={(title, cover) => {
-            update(book, title, cover);
+            hook.update(book, title, cover);
           }}
         />
         )}
