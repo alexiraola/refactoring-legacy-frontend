@@ -53,7 +53,7 @@ export function useLibraryApp(service: LibraryService) {
   const deleteBook = async (book: Book) => {
     await service.deleteBook(book);
 
-    const books = state.books.filter(book => !book.equals(book));
+    const books = state.books.filter(b => !b.equals(book));
 
     setState({ ...state, books });
   }

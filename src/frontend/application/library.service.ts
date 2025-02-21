@@ -42,7 +42,7 @@ export class LibraryService {
 
   private ensureThatBookIsNotRepeated(book: Book, books: Book[]) {
     books.forEach(b => {
-      if (b.title == book.title) {
+      if (b.toDto().title == book.toDto().title) {
         throw new Error('Error: The title is already in the collection.');
       }
     });

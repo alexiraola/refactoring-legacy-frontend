@@ -17,7 +17,9 @@ type BookItemState = {
   editingCover: string;
 }
 
-export default function BookItem({ book, onMarkAsReadClicked, onDeleteClicked, onEdit }: Props) {
+export default function BookItem({ book: b, onMarkAsReadClicked, onDeleteClicked, onEdit }: Props) {
+  const book = b.toDto();
+
   const [state, setState] = useState<BookItemState>({
     updating: false,
     editingTitle: book.title,

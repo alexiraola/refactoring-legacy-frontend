@@ -1,4 +1,5 @@
 import { v4 as uuid } from "uuid";
+import { BookTitle } from "./valueObjects/book.title";
 
 export type BookDto = {
   id: string;
@@ -10,26 +11,28 @@ export type BookDto = {
 export class Book {
   constructor(
     private readonly id: string,
-    public title: string,
+    private title: BookTitle,
     public pictureUrl: string,
     public completed: boolean
   ) { }
 
   static create(title: string, cover: string): Book {
-    this.ensureIsValidTitle(title);
+    const bookTitle = BookTitle.create(title);
+    // this.ensureIsValidTitle(title);
     this.ensureIsValidCover(cover);
-    return new Book(uuid(), title, cover, false);
+    return new Book(uuid(), bookTitle, cover, false);
   }
 
   static createFromDto(book: BookDto): Book {
-    this.ensureIsValidTitle(book.title);
+    const title = BookTitle.create(book.title);
+    // this.ensureIsValidTitle(book.title);
     this.ensureIsValidCover(book.pictureUrl);
-    return new Book(book.id, book.title, book.pictureUrl, book.completed);
+    return new Book(book.id, title, book.pictureUrl, book.completed);
   }
 
   updateTitle(title: string) {
-    Book.ensureIsValidTitle(title);
-    this.title = title;
+    // Book.ensureIsValidTitle(title);
+    this.title = BookTitle.create(title);
   }
 
   updateCover(cover: string) {
@@ -48,31 +51,9 @@ export class Book {
   toDto(): BookDto {
     return {
       id: this.id,
-      title: this.title,
+      title: this.title.toString(),
       pictureUrl: this.pictureUrl,
       completed: this.completed
-    }
-  }
-
-  private static ensureIsValidTitle(title: string) {
-    const minTitleLength = 3;
-    const maxTitleLength = 100;
-
-    const hasValidLength = title.length < minTitleLength || title.length > maxTitleLength;
-    if (hasValidLength) {
-      throw new Error(`Error: The title must be between ${minTitleLength} and ${maxTitleLength} characters long.`);
-    }
-
-    const isValidTitle = /[^a-zA-Z0-9\s]/.test(title);
-    if (isValidTitle) {
-      throw new Error('Error: The title can only contain letters, numbers, and spaces.');
-    }
-
-    const forbiddenWords = ['prohibited', 'forbidden', 'banned'];
-    const words = title.split(/\s+/);
-    let foundForbiddenWord = words.find(word => forbiddenWords.includes(word));
-    if (foundForbiddenWord) {
-      throw new Error(`Error: The title cannot include the prohibited word "${foundForbiddenWord}"`);
     }
   }
 
