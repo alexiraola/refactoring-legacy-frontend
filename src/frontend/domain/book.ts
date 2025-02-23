@@ -1,4 +1,5 @@
 import { v4 as uuid } from "uuid";
+import { BookCover } from "./valueObjects/book.cover";
 import { BookTitle } from "./valueObjects/book.title";
 
 export type BookDto = {
@@ -12,32 +13,28 @@ export class Book {
   constructor(
     private readonly id: string,
     private title: BookTitle,
-    public pictureUrl: string,
+    private cover: BookCover,
     public completed: boolean
   ) { }
 
   static create(title: string, cover: string): Book {
     const bookTitle = BookTitle.create(title);
-    // this.ensureIsValidTitle(title);
-    this.ensureIsValidCover(cover);
-    return new Book(uuid(), bookTitle, cover, false);
+    const bookCover = BookCover.create(cover);
+    return new Book(uuid(), bookTitle, bookCover, false);
   }
 
   static createFromDto(book: BookDto): Book {
     const title = BookTitle.create(book.title);
-    // this.ensureIsValidTitle(book.title);
-    this.ensureIsValidCover(book.pictureUrl);
-    return new Book(book.id, title, book.pictureUrl, book.completed);
+    const cover = BookCover.create(book.pictureUrl);
+    return new Book(book.id, title, cover, book.completed);
   }
 
   updateTitle(title: string) {
-    // Book.ensureIsValidTitle(title);
     this.title = BookTitle.create(title);
   }
 
   updateCover(cover: string) {
-    Book.ensureIsValidCover(cover);
-    this.pictureUrl = cover;
+    this.cover = BookCover.create(cover);
   }
 
   toggleCompleted() {
@@ -52,24 +49,8 @@ export class Book {
     return {
       id: this.id,
       title: this.title.toString(),
-      pictureUrl: this.pictureUrl,
+      pictureUrl: this.cover.toString(),
       completed: this.completed
     }
-  }
-
-  private static ensureIsValidCover(cover: string) {
-    if (!isValidUrl(cover)) {
-      throw new Error('Error: The cover url is not valid');
-    }
-  }
-}
-
-function isValidUrl(url: string) {
-  try {
-    new URL(url);
-    return true;
-  }
-  catch (e) {
-    return false;
   }
 }
