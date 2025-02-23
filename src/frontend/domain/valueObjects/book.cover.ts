@@ -1,3 +1,13 @@
+enum ErrorType {
+  INVALID_URL
+}
+
+export class BookCoverError extends Error {
+  constructor(readonly type: ErrorType, message: string) {
+    super(message);
+  }
+}
+
 export class BookCover {
   constructor(private readonly url: URL) { }
 
@@ -11,18 +21,18 @@ export class BookCover {
   }
 
   private static ensureIsValidCover(cover: string) {
-    if (!isValidUrl(cover)) {
-      throw new Error('Error: The cover url is not valid');
+    if (!this.isValidUrl(cover)) {
+      throw new BookCoverError(ErrorType.INVALID_URL, 'Error: The cover url is not valid');
     }
   }
-}
 
-function isValidUrl(url: string) {
-  try {
-    new URL(url);
-    return true;
-  }
-  catch (e) {
-    return false;
+  private static isValidUrl(url: string) {
+    try {
+      new URL(url);
+      return true;
+    }
+    catch (e) {
+      return false;
+    }
   }
 }

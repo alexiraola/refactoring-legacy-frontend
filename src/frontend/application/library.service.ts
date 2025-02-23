@@ -1,6 +1,16 @@
 import { Book } from "../domain/book";
 import { BookRepository } from "../domain/book.repository";
 
+enum ErrorType {
+  REPEATED_BOOK
+}
+
+export class LibraryError extends Error {
+  constructor(readonly type: ErrorType, message: string) {
+    super(message);
+  }
+}
+
 export class LibraryService {
   constructor(private readonly bookRepository: BookRepository) { }
 
@@ -43,7 +53,7 @@ export class LibraryService {
   private ensureThatBookIsNotRepeated(book: Book, books: Book[]) {
     books.forEach(b => {
       if (b.toDto().title == book.toDto().title) {
-        throw new Error('Error: The title is already in the collection.');
+        throw new LibraryError(ErrorType.REPEATED_BOOK, 'Error: The title is already in the collection.');
       }
     });
   }
