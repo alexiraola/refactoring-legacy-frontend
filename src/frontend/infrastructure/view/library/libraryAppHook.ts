@@ -3,6 +3,7 @@ import { Book } from "../../../domain/book";
 import { LibraryService } from "../../../application/library.service";
 import { useState } from "react";
 import { countCompletedBooks } from "../../../domain/services/count.book";
+import { BookCoverError, BookError, BookTitleError, LibraryError, LibraryErrorType } from "../../../domain/common/library.error";
 
 export type FilterType = 'all' | 'completed' | 'incomplete';
 
@@ -35,8 +36,26 @@ export function useLibraryApp(service: LibraryService) {
 
       setState({ ...state, books: [...state.books, book], bookTitle: '', bookCover: '' });
     } catch (error) {
-      alert(error.message);
-      return;
+      if (error instanceof LibraryError) {
+        alert(getErrorMessage(error.type));
+      } else {
+        alert(error.message);
+      }
+    }
+  }
+
+  const getErrorMessage = (errorType: LibraryErrorType) => {
+    switch (errorType) {
+      case BookError.REPEATED_TITLE:
+        return "Error: The title is already in the collection.";
+      case BookTitleError.INVALID_LENGTH:
+        return "Error: The title must be between 3 and 100 characters long.";
+      case BookTitleError.INVALID_CHARACTERS:
+        return "Error: The title can only contain letters, numbers, and spaces.";
+      case BookTitleError.FORBIDDEN_WORDS:
+        return "Error: The title cannot include a prohibited word";
+      case BookCoverError.INVALID_URL:
+        return "Error: The cover url is not valid";
     }
   }
 
