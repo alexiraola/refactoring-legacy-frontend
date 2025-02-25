@@ -25,14 +25,15 @@ export class LibraryService {
   }
 
   async updateBook(books: Book[], book: Book, title: string, cover: string) {
-    book.updateTitle(title);
-    book.updateCover(cover);
+    const updatedBook = Book.createFromBook(book);
+    updatedBook.updateTitle(title);
+    updatedBook.updateCover(cover);
 
-    this.ensureThatBookIsNotRepeated(book, books);
+    this.ensureThatBookIsNotRepeated(updatedBook, books);
 
-    await this.bookRepository.update(book);
+    await this.bookRepository.update(updatedBook);
 
-    return book;
+    return updatedBook;
   }
 
   async deleteBook(book: Book) {
@@ -40,15 +41,16 @@ export class LibraryService {
   }
 
   async toggleComplete(book: Book) {
-    book.toggleCompleted();
-    await this.bookRepository.update(book);
+    const updatedBook = Book.createFromBook(book);
+    updatedBook.toggleCompleted();
+    await this.bookRepository.update(updatedBook);
 
-    return book;
+    return updatedBook;
   }
 
   private ensureThatBookIsNotRepeated(book: Book, books: Book[]) {
-    books.forEach(b => {
-      if (!b.equals(book) && b.toDto().title == book.toDto().title) {
+    books.filter(b => !book.equals(b)).forEach(b => {
+      if (b.toDto().title == book.toDto().title) {
         throw new RepeatedTitleError();
       }
     });

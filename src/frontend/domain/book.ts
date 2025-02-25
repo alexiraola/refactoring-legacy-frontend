@@ -29,6 +29,10 @@ export class Book {
     return new Book(book.id, title, cover, book.completed);
   }
 
+  static createFromBook(book: Book): Book {
+    return Book.createFromDto(book.toDto());
+  }
+
   updateTitle(title: string) {
     this.title = BookTitle.create(title);
   }
