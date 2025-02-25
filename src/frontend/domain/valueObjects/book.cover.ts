@@ -1,4 +1,8 @@
-import { BookCoverError, LibraryError } from "../common/library.error";
+export class InvalidUrlBookCoverError extends Error {
+  constructor() {
+    super("Error: The cover url is not valid");
+  }
+}
 
 export class BookCover {
   constructor(private readonly url: URL) { }
@@ -14,7 +18,7 @@ export class BookCover {
 
   private static ensureIsValidCover(cover: string) {
     if (!this.isValidUrl(cover)) {
-      throw new LibraryError(BookCoverError.INVALID_URL, 'Error: The cover url is not valid');
+      throw new InvalidUrlBookCoverError();
     }
   }
 

@@ -1,4 +1,20 @@
-import { BookTitleError, LibraryError } from "../common/library.error";
+export class InvalidBookTitleLengthError extends Error {
+  constructor(readonly minTitleLength: number, readonly maxTitleLength: number) {
+    super(`Error: The title must be between ${minTitleLength} and ${maxTitleLength} characters long.`);
+  }
+}
+
+export class InvalidCharactersBookTitleError extends Error {
+  constructor() {
+    super("Error: The title can only contain letters, numbers, and spaces.");
+  }
+}
+
+export class ForbiddenWordsBookTitleError extends Error {
+  constructor(readonly forbiddenWord: string) {
+    super(`Error: The title cannot include the prohibited word "${forbiddenWord}"`);
+  }
+}
 
 export class BookTitle {
   constructor(private readonly title: string) { }
@@ -24,14 +40,14 @@ export class BookTitle {
 
     const hasValidLength = title.length < minTitleLength || title.length > maxTitleLength;
     if (hasValidLength) {
-      throw new LibraryError(BookTitleError.INVALID_LENGTH, `Error: The title must be between ${minTitleLength} and ${maxTitleLength} characters long.`);
+      throw new InvalidBookTitleLengthError(minTitleLength, maxTitleLength);
     }
   }
 
   private static ensureContainsValidCharacters(title: string) {
     const isValidTitle = /[^a-zA-Z0-9\s]/.test(title);
     if (isValidTitle) {
-      throw new LibraryError(BookTitleError.INVALID_CHARACTERS, 'Error: The title can only contain letters, numbers, and spaces.');
+      throw new InvalidCharactersBookTitleError();
     }
   }
 
@@ -40,7 +56,7 @@ export class BookTitle {
     const words = title.split(/\s+/);
     let foundForbiddenWord = words.find(word => forbiddenWords.includes(word));
     if (foundForbiddenWord) {
-      throw new LibraryError(BookTitleError.FORBIDDEN_WORDS, `Error: The title cannot include the prohibited word "${foundForbiddenWord}"`);
+      throw new ForbiddenWordsBookTitleError(foundForbiddenWord);
     }
   }
 }

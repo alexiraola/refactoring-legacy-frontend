@@ -1,9 +1,10 @@
 import { filterBooks } from "../../../domain/services/filter.books";
 import { Book } from "../../../domain/book";
-import { LibraryService } from "../../../application/library.service";
+import { LibraryService, RepeatedTitleError } from "../../../application/library.service";
 import { useState } from "react";
 import { countCompletedBooks } from "../../../domain/services/count.book";
-import { BookCoverError, BookError, BookTitleError, LibraryError, LibraryErrorType } from "../../../domain/common/library.error";
+import { ForbiddenWordsBookTitleError, InvalidBookTitleLengthError, InvalidCharactersBookTitleError } from "../../../domain/valueObjects/book.title";
+import { InvalidUrlBookCoverError } from "../../../domain/valueObjects/book.cover";
 
 export type FilterType = 'all' | 'completed' | 'incomplete';
 
@@ -36,26 +37,23 @@ export function useLibraryApp(service: LibraryService) {
 
       setState({ ...state, books: [...state.books, book], bookTitle: '', bookCover: '' });
     } catch (error) {
-      if (error instanceof LibraryError) {
-        alert(getErrorMessage(error.type));
-      } else {
-        alert(error.message);
-      }
+      alert(getErrorMessage(error));
     }
   }
 
-  const getErrorMessage = (errorType: LibraryErrorType) => {
-    switch (errorType) {
-      case BookError.REPEATED_TITLE:
-        return "Error: The title is already in the collection.";
-      case BookTitleError.INVALID_LENGTH:
-        return "Error: The title must be between 3 and 100 characters long.";
-      case BookTitleError.INVALID_CHARACTERS:
-        return "Error: The title can only contain letters, numbers, and spaces.";
-      case BookTitleError.FORBIDDEN_WORDS:
-        return "Error: The title cannot include a prohibited word";
-      case BookCoverError.INVALID_URL:
-        return "Error: The cover url is not valid";
+  const getErrorMessage = (error: Error) => {
+    if (error instanceof InvalidBookTitleLengthError) {
+      return `Error: The title must be between ${error.minTitleLength} and ${error.maxTitleLength} characters long.`;
+    } else if (error instanceof InvalidCharactersBookTitleError) {
+      return "Error: The title can only contain letters, numbers, and spaces.";
+    } else if (error instanceof ForbiddenWordsBookTitleError) {
+      return `Error: The title cannot include the prohibited word "${error.forbiddenWord}"`;
+    } else if (error instanceof InvalidUrlBookCoverError) {
+      return "Error: The cover url is not valid";
+    } else if (error instanceof RepeatedTitleError) {
+      return "Error: The title is already in the collection.";
+    } else {
+      return error.message;
     }
   }
 
