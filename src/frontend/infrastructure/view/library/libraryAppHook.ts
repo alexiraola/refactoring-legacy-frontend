@@ -62,8 +62,8 @@ export function useLibraryApp(service: LibraryService) {
       const updatedBook = await service.updateBook(state.books as Book[], book, bookTitle, bookCover);
       const books = state.books.map(book => book.equals(updatedBook) ? updatedBook : book);
       setState({ ...state, books });
-    } catch (e) {
-      alert(e.message);
+    } catch (error) {
+      alert(getErrorMessage(error));
     }
   }
 
