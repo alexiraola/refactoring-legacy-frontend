@@ -48,7 +48,7 @@ export class LibraryService {
 
   private ensureThatBookIsNotRepeated(book: Book, books: Book[]) {
     books.forEach(b => {
-      if (b.toDto().title == book.toDto().title) {
+      if (!b.equals(book) && b.toDto().title == book.toDto().title) {
         throw new RepeatedTitleError();
       }
     });
