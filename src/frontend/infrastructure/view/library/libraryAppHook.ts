@@ -14,6 +14,7 @@ type LibraryState = {
   readonly bookCover: string;
   readonly filter: FilterType;
   readonly addErrorMessage: string;
+  readonly updateErrorMessages: { [key: string]: string }
 }
 
 const initialState = (): LibraryState => ({
@@ -21,7 +22,8 @@ const initialState = (): LibraryState => ({
   bookTitle: '',
   bookCover: '',
   filter: 'all',
-  addErrorMessage: ''
+  addErrorMessage: '',
+  updateErrorMessages: {}
 });
 
 export function useLibraryApp(service: LibraryService) {
@@ -39,7 +41,6 @@ export function useLibraryApp(service: LibraryService) {
 
       setState({ ...state, books: [...state.books, book], bookTitle: '', bookCover: '', addErrorMessage: '' });
     } catch (error) {
-      alert(getErrorMessage(error));
       setState({ ...state, addErrorMessage: getErrorMessage(error) });
     }
   }
@@ -66,7 +67,9 @@ export function useLibraryApp(service: LibraryService) {
       const books = state.books.map(book => book.equals(updatedBook) ? updatedBook : book);
       setState({ ...state, books });
     } catch (error) {
-      alert(getErrorMessage(error));
+      const errorMessages = { ...state.updateErrorMessages };
+      errorMessages[book.toDto().id] = getErrorMessage(error);
+      setState({ ...state, updateErrorMessages: errorMessages });
     }
   }
 
@@ -96,6 +99,12 @@ export function useLibraryApp(service: LibraryService) {
     setState({ ...state, bookCover: event.target.value });
   }
 
+  const clearError = (book: Book) => {
+    const errorMessages = { ...state.updateErrorMessages };
+    errorMessages[book.toDto().id] = '';
+    setState({ ...state, updateErrorMessages: errorMessages });
+  }
+
   const books = filterBooks(state.books as Book[], state.filter);
 
   return {
@@ -103,6 +112,7 @@ export function useLibraryApp(service: LibraryService) {
     bookCover: state.bookCover,
     counter: countCompletedBooks(state.books as Book[]),
     addErrorMessage: state.addErrorMessage,
+    updateErrorMessages: state.updateErrorMessages,
     initialize,
     add,
     books,
@@ -111,7 +121,8 @@ export function useLibraryApp(service: LibraryService) {
     onTitleChange,
     setFilter,
     toggleComplete,
-    update
+    update,
+    clearError
   };
 }
 

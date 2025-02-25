@@ -32,7 +32,7 @@ export const LibraryApp = ({ service }: LibraryProps) => {
           onChange={hook.onCoverChange}
         />
       </div>
-      {hook.addErrorMessage && <p style={{ color: 'red' }}>{hook.addErrorMessage}</p>}
+      {hook.addErrorMessage && <p data-testid="add-error" style={{ color: 'red' }}>{hook.addErrorMessage}</p>}
       <button data-testid="add" className="library-button add-book-button" onClick={() => hook.add()}>
         Add Book
       </button>
@@ -44,11 +44,13 @@ export const LibraryApp = ({ service }: LibraryProps) => {
       </div>
       <ul data-testid="books" className="book-list">
         {hook.books.map(book => <BookItem book={book}
+          errorMessage={hook.updateErrorMessages[book.toDto().id] || ''}
           onMarkAsReadClicked={() => hook.toggleComplete(book)}
           onDeleteClicked={() => hook.deleteBook(book)}
           onEdit={(title, cover) => {
             hook.update(book, title, cover);
           }}
+          clearError={() => hook.clearError(book)}
         />
         )}
       </ul>

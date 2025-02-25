@@ -25,9 +25,7 @@ describe('Library App', () => {
   it('should not be able to add a book with an invalid title', () => {
     addBook('b', 'https://example.com/image.jpg');
 
-    cy.on('window.alert', str => {
-      expect(str).toBe('Error: The title must be between 3 and 100 characters long.')
-    })
+    cy.contains('[data-testid="add-error"]', 'Error: The title must be between 3 and 100 characters long.').should('exist');
 
     cy.get('[data-testid="book"]').should('not.exist');
   });
@@ -96,9 +94,9 @@ describe('Library App', () => {
     const newTitle = 'b';
     editBook(newTitle, 'https://example.com/image.jpg');
 
-    cy.on('window.alert', str => {
-      expect(str).toBe('Error: The title must be between 3 and 100 characters long.')
-    })
+    cy.contains('[data-testid="update-error"]', 'Error: The title must be between 3 and 100 characters long.').should('exist');
+
+    cy.get('[data-testid="cancel"]').click();
 
     cy.contains('[data-testid="book"]', newTitle).should('not.exist');
 
