@@ -32,6 +32,7 @@ export const LibraryApp = ({ service }: LibraryProps) => {
           onChange={hook.onCoverChange}
         />
       </div>
+      {hook.addErrorMessage && <p style={{ color: 'red' }}>{hook.addErrorMessage}</p>}
       <button data-testid="add" className="library-button add-book-button" onClick={() => hook.add()}>
         Add Book
       </button>

@@ -13,13 +13,15 @@ type LibraryState = {
   readonly bookTitle: string;
   readonly bookCover: string;
   readonly filter: FilterType;
+  readonly addErrorMessage: string;
 }
 
 const initialState = (): LibraryState => ({
   books: [],
   bookTitle: '',
   bookCover: '',
-  filter: 'all'
+  filter: 'all',
+  addErrorMessage: ''
 });
 
 export function useLibraryApp(service: LibraryService) {
@@ -35,9 +37,10 @@ export function useLibraryApp(service: LibraryService) {
     try {
       const book = await service.addBook(state.books as Book[], state.bookTitle, state.bookCover);
 
-      setState({ ...state, books: [...state.books, book], bookTitle: '', bookCover: '' });
+      setState({ ...state, books: [...state.books, book], bookTitle: '', bookCover: '', addErrorMessage: '' });
     } catch (error) {
       alert(getErrorMessage(error));
+      setState({ ...state, addErrorMessage: getErrorMessage(error) });
     }
   }
 
@@ -99,6 +102,7 @@ export function useLibraryApp(service: LibraryService) {
     bookTitle: state.bookTitle,
     bookCover: state.bookCover,
     counter: countCompletedBooks(state.books as Book[]),
+    addErrorMessage: state.addErrorMessage,
     initialize,
     add,
     books,
