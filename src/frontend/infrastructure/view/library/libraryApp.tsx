@@ -1,13 +1,17 @@
 import * as React from "react";
 import { useEffect } from "react";
 import { LibraryService } from "../../../application/library.service";
+import { TranslationFactory } from "../../locale/translation";
 import BookItem from "./Book";
 import { useLibraryApp } from "./libraryAppHook";
+import Language from "./Language";
 
 type LibraryProps = { service: LibraryService };
 
 export const LibraryApp = ({ service }: LibraryProps) => {
   const hook = useLibraryApp(service);
+
+  const t = TranslationFactory.getTranslationsFor(hook.locale);
 
   useEffect(() => {
     hook.initialize();
@@ -15,26 +19,27 @@ export const LibraryApp = ({ service }: LibraryProps) => {
 
   return (
     <div className="app-container">
-      <h1>LIBRARY APP</h1>
+      <Language locale={hook.locale} onChange={(locale) => hook.setLocale(locale)} />
+      <h1>{t.appTitle}</h1>
       <div>
         <input
           data-testid="title"
           className="library-input"
           value={hook.bookTitle}
-          placeholder={'Book Title'}
+          placeholder={t.add.titlePlaceholder}
           onChange={hook.onTitleChange}
         />
         <input
           data-testid="cover"
           className="library-input"
           value={hook.bookCover}
-          placeholder={'Cover Url'}
+          placeholder={t.add.coverPlaceholder}
           onChange={hook.onCoverChange}
         />
       </div>
       {hook.addErrorMessage && <p data-testid="add-error" style={{ color: 'red' }}>{hook.addErrorMessage}</p>}
       <button data-testid="add" className="library-button add-book-button" onClick={() => hook.add()}>
-        Add Book
+        {t.add.addButton}
       </button>
       <h2>Books Read: {hook.counter}</h2>
       <div>
