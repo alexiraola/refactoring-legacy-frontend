@@ -41,14 +41,14 @@ export const LibraryApp = ({ service }: LibraryProps) => {
       <button data-testid="add" className="library-button add-book-button" onClick={() => hook.add()}>
         {t.add.addButton}
       </button>
-      <h2>Books Read: {hook.counter}</h2>
+      <h2>{t.booksRead(hook.counter)}</h2>
       <div>
-        <button data-testid="showAllBooks" className="library-button all-filter" onClick={() => hook.setFilter('all')}>All</button>
-        <button data-testid="showReadBooks" className="library-button completed-filter" onClick={() => hook.setFilter('completed')}>Read</button>
-        <button data-testid="showUnreadBooks" className="library-button incomplete-filter" onClick={() => hook.setFilter('incomplete')}>Unread</button>
+        <button data-testid="showAllBooks" className="library-button all-filter" onClick={() => hook.setFilter('all')}>{t.filter.all}</button>
+        <button data-testid="showReadBooks" className="library-button completed-filter" onClick={() => hook.setFilter('completed')}>{t.filter.read}</button>
+        <button data-testid="showUnreadBooks" className="library-button incomplete-filter" onClick={() => hook.setFilter('incomplete')}>{t.filter.unread}</button>
       </div>
       <ul data-testid="books" className="book-list">
-        {hook.books.map(book => <BookItem book={book}
+        {hook.books.map(book => <BookItem key={book.toDto().id} t={t} book={book}
           errorMessage={hook.updateErrorMessages[book.toDto().id] || ''}
           onMarkAsReadClicked={() => hook.toggleComplete(book)}
           onDeleteClicked={() => hook.deleteBook(book)}

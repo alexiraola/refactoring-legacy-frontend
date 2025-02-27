@@ -20,5 +20,17 @@ export type Translations = {
     titlePlaceholder: string;
     coverPlaceholder: string;
     addButton: string;
-  }
+  },
+  booksRead: (count: number) => string;
+  filter: {
+    all: string;
+    read: string;
+    unread: string;
+  },
+  book: {
+    markAsRead: string;
+    markAsUnread: string;
+    save: string;
+    cancel: string;
+  },
 }

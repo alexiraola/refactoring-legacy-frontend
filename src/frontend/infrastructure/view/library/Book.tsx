@@ -3,8 +3,10 @@ import * as React from "react";
 import { useState, useMemo } from "react";
 import { trash, createOutline, checkmark } from 'ionicons/icons';
 import { Book } from "../../../domain/book";
+import { Translations } from "../../locale/translation";
 
 type Props = {
+  t: Translations;
   book: Book;
   errorMessage: string;
   onMarkAsReadClicked: () => void;
@@ -19,7 +21,7 @@ type BookItemState = {
   editingCover: string;
 }
 
-export default function BookItem({ book: b, errorMessage, onMarkAsReadClicked, onDeleteClicked, onEdit, clearError }: Props) {
+export default function BookItem({ t, book: b, errorMessage, onMarkAsReadClicked, onDeleteClicked, onEdit, clearError }: Props) {
   const book = b.toDto();
 
   const [state, setState] = useState<BookItemState>({
@@ -48,13 +50,13 @@ export default function BookItem({ book: b, errorMessage, onMarkAsReadClicked, o
             <input
               data-testid="editTitle"
               className="book-edit-input"
-              defaultValue={book.title} // Asumiendo que inputData se usa para la edición
+              defaultValue={book.title}
               onChange={event => setState({ ...state, editingTitle: event.target.value })}
             />
             <input
               data-testid="editCover"
               className="book-edit-input"
-              defaultValue={book.pictureUrl} //
+              defaultValue={book.pictureUrl}
               onChange={event => setState({ ...state, editingCover: event.target.value })}
             />
             {errorMessage && <p data-testid="update-error" style={{ color: 'red' }}>{errorMessage}</p>}
@@ -69,7 +71,7 @@ export default function BookItem({ book: b, errorMessage, onMarkAsReadClicked, o
               {!showEdit &&
                 <button data-testid="markAsRead" className="book-button"
                   onClick={() => onMarkAsReadClicked()}>
-                  {book.completed ? 'Mark as Unread' : 'Mark as Read'}
+                  {book.completed ? t.book.markAsUnread : t.book.markAsRead}
                 </button>}
               {!showEdit &&
                 <button data-testid="edit" className="book-button"
@@ -92,14 +94,14 @@ export default function BookItem({ book: b, errorMessage, onMarkAsReadClicked, o
               onEdit(state.editingTitle, state.editingCover);
               setState({ ...state, updating: false });
             }}>
-            Save
+            {t.book.save}
           </button>
           <button data-testid="cancel" className="library-button book-update-button"
             onClick={() => {
               setState({ ...state, updating: false });
               clearError()
             }}>
-            Cancel
+            {t.book.cancel}
           </button>
         </div>
 
