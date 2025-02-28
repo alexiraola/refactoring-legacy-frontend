@@ -5,6 +5,7 @@ import { TranslationFactory } from "../../locale/translation";
 import BookItem from "./Book";
 import { useLibraryApp } from "./libraryAppHook";
 import Language from "./Language";
+import { getErrorMessage } from "../errors";
 
 type LibraryProps = { service: LibraryService };
 
@@ -37,7 +38,7 @@ export const LibraryApp = ({ service }: LibraryProps) => {
           onChange={hook.onCoverChange}
         />
       </div>
-      {hook.addErrorMessage && <p data-testid="add-error" style={{ color: 'red' }}>{hook.addErrorMessage}</p>}
+      {hook.error && <p data-testid="add-error" style={{ color: 'red' }}>{getErrorMessage(hook.error, t)}</p>}
       <button data-testid="add" className="library-button add-book-button" onClick={() => hook.add()}>
         {t.add.addButton}
       </button>

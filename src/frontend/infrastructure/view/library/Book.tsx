@@ -4,13 +4,14 @@ import { trash, createOutline, checkmark } from 'ionicons/icons';
 import { BookDto } from "../../../domain/book";
 import { Translations } from "../../locale/translation";
 import { BookItemStatus, useBook } from "./BookHook";
+import { getErrorMessage } from "../errors";
 
 type Props = {
   t: Translations;
   book: BookDto;
   onMarkAsReadClicked: () => void;
   onDeleteClicked: () => void;
-  onEdit: (title: string, cover: string, onSuccess: () => void, onError: (errorMessage: string) => void) => void;
+  onEdit: (title: string, cover: string, onSuccess: () => void, onError: (error: Error) => void) => void;
 }
 
 export default function BookItem({ t, book, onMarkAsReadClicked, onDeleteClicked, onEdit }: Props) {
@@ -32,7 +33,7 @@ export default function BookItem({ t, book, onMarkAsReadClicked, onDeleteClicked
             defaultValue={book.pictureUrl}
             onChange={hook.onCoverChange}
           />
-          {hook.errorMessage && <p data-testid="update-error" style={{ color: 'red' }}>{hook.errorMessage}</p>}
+          {hook.error && <p data-testid="update-error" style={{ color: 'red' }}>{getErrorMessage(hook.error, t)}</p>}
         </div>
         <div>
           <button data-testid="saveEdit" className="library-button book-update-button"

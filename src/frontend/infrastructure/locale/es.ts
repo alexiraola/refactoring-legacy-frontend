@@ -18,5 +18,16 @@ export const es: Translations = {
     markAsUnread: 'Marcar como no leído',
     save: 'Guardar',
     cancel: 'Cancelar'
+  },
+  errors: {
+    invalidBookTitleLength(minTitleLength, maxTitleLength) {
+      return `Error: La longitud del título debe estar entre ${minTitleLength} y ${maxTitleLength}.`;
+    },
+    invalidCharactersBookTitleError: "Error: El título sólo debe contener letras, números y espacios.",
+    forbiddenWordsBookTitleError(forbiddenWord) {
+      return `Error: El título no puede contener la palabra prohibida "${forbiddenWord}"`;
+    },
+    invalidUrlBookCoverError: "Error: La url de la portada no es válida",
+    repeatedTitleError: "Error: El título ya existe en la colección."
   }
 }

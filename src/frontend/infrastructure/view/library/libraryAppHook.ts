@@ -1,10 +1,8 @@
 import { filterBooks } from "../../../domain/services/filter.books";
 import { Book } from "../../../domain/book";
-import { LibraryService, RepeatedTitleError } from "../../../application/library.service";
+import { LibraryService } from "../../../application/library.service";
 import { useState } from "react";
 import { countCompletedBooks } from "../../../domain/services/count.book";
-import { ForbiddenWordsBookTitleError, InvalidBookTitleLengthError, InvalidCharactersBookTitleError } from "../../../domain/valueObjects/book.title";
-import { InvalidUrlBookCoverError } from "../../../domain/valueObjects/book.cover";
 import { Locale } from "../../../domain/locale";
 
 export type FilterType = 'all' | 'completed' | 'incomplete';
@@ -15,7 +13,7 @@ type LibraryState = {
   readonly bookTitle: string;
   readonly bookCover: string;
   readonly filter: FilterType;
-  readonly addErrorMessage: string;
+  readonly error: Error | null;
 }
 
 const initialState = (): LibraryState => ({
@@ -24,7 +22,7 @@ const initialState = (): LibraryState => ({
   bookTitle: '',
   bookCover: '',
   filter: 'all',
-  addErrorMessage: '',
+  error: null,
 });
 
 export function useLibraryApp(service: LibraryService) {
@@ -40,36 +38,20 @@ export function useLibraryApp(service: LibraryService) {
     try {
       const book = await service.addBook(state.books as Book[], state.bookTitle, state.bookCover);
 
-      setState({ ...state, books: [...state.books, book], bookTitle: '', bookCover: '', addErrorMessage: '' });
+      setState({ ...state, books: [...state.books, book], bookTitle: '', bookCover: '' });
     } catch (error) {
-      setState({ ...state, addErrorMessage: getErrorMessage(error) });
+      setState({ ...state, error });
     }
   }
 
-  const getErrorMessage = (error: Error) => {
-    if (error instanceof InvalidBookTitleLengthError) {
-      return `Error: The title must be between ${error.minTitleLength} and ${error.maxTitleLength} characters long.`;
-    } else if (error instanceof InvalidCharactersBookTitleError) {
-      return "Error: The title can only contain letters, numbers, and spaces.";
-    } else if (error instanceof ForbiddenWordsBookTitleError) {
-      return `Error: The title cannot include the prohibited word "${error.forbiddenWord}"`;
-    } else if (error instanceof InvalidUrlBookCoverError) {
-      return "Error: The cover url is not valid";
-    } else if (error instanceof RepeatedTitleError) {
-      return "Error: The title is already in the collection.";
-    } else {
-      return error.message;
-    }
-  }
-
-  const update = async (book: Book, bookTitle: string, bookCover: string, onSuccess: () => void, onError: (errorMessage: string) => void) => {
+  const update = async (book: Book, bookTitle: string, bookCover: string, onSuccess: () => void, onError: (error: Error) => void) => {
     try {
       const updatedBook = await service.updateBook(state.books as Book[], book, bookTitle, bookCover);
       const books = state.books.map(book => book.equals(updatedBook) ? updatedBook : book);
       onSuccess();
       setState({ ...state, books });
     } catch (error) {
-      onError(getErrorMessage(error));
+      onError(error);
     }
   }
 
@@ -110,7 +92,7 @@ export function useLibraryApp(service: LibraryService) {
     bookTitle: state.bookTitle,
     bookCover: state.bookCover,
     counter: countCompletedBooks(state.books as Book[]),
-    addErrorMessage: state.addErrorMessage,
+    error: state.error,
     initialize,
     add,
     books,

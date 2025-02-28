@@ -33,4 +33,11 @@ export type Translations = {
     save: string;
     cancel: string;
   },
+  errors: {
+    invalidBookTitleLength: (minTitleLength: number, maxTitleLength: number) => string;
+    invalidCharactersBookTitleError: string;
+    forbiddenWordsBookTitleError: (forbiddenWord: string) => string;
+    invalidUrlBookCoverError: string;
+    repeatedTitleError: string;
+  }
 }

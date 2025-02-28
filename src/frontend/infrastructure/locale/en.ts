@@ -18,5 +18,16 @@ export const en: Translations = {
     markAsUnread: 'Mark as unread',
     save: 'Save',
     cancel: 'Cancel'
+  },
+  errors: {
+    invalidBookTitleLength(minTitleLength, maxTitleLength) {
+      return `Error: The title must be between ${minTitleLength} and ${maxTitleLength} characters long.`;
+    },
+    invalidCharactersBookTitleError: "Error: The title can only contain letters, numbers, and spaces.",
+    forbiddenWordsBookTitleError(forbiddenWord) {
+      return `Error: The title cannot include the prohibited word "${forbiddenWord}"`;
+    },
+    invalidUrlBookCoverError: "Error: The cover url is not valid",
+    repeatedTitleError: "Error: The title is already in the collection."
   }
 }
