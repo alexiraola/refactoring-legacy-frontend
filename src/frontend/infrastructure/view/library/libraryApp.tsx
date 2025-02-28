@@ -49,13 +49,11 @@ export const LibraryApp = ({ service }: LibraryProps) => {
       </div>
       <ul data-testid="books" className="book-list">
         {hook.books.map(book => <BookItem key={book.toDto().id} t={t} book={book}
-          errorMessage={hook.updateErrorMessages[book.toDto().id] || ''}
           onMarkAsReadClicked={() => hook.toggleComplete(book)}
           onDeleteClicked={() => hook.deleteBook(book)}
-          onEdit={(title, cover) => {
-            hook.update(book, title, cover);
+          onEdit={(title, cover, onSuccess, onError) => {
+            hook.update(book, title, cover, onSuccess, onError);
           }}
-          clearError={() => hook.clearError(book)}
         />
         )}
       </ul>

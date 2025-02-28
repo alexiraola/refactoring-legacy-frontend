@@ -16,7 +16,6 @@ type LibraryState = {
   readonly bookCover: string;
   readonly filter: FilterType;
   readonly addErrorMessage: string;
-  readonly updateErrorMessages: { [key: string]: string }
 }
 
 const initialState = (): LibraryState => ({
@@ -26,7 +25,6 @@ const initialState = (): LibraryState => ({
   bookCover: '',
   filter: 'all',
   addErrorMessage: '',
-  updateErrorMessages: {}
 });
 
 export function useLibraryApp(service: LibraryService) {
@@ -64,15 +62,14 @@ export function useLibraryApp(service: LibraryService) {
     }
   }
 
-  const update = async (book: Book, bookTitle: string, bookCover: string) => {
+  const update = async (book: Book, bookTitle: string, bookCover: string, onSuccess: () => void, onError: (errorMessage: string) => void) => {
     try {
       const updatedBook = await service.updateBook(state.books as Book[], book, bookTitle, bookCover);
       const books = state.books.map(book => book.equals(updatedBook) ? updatedBook : book);
+      onSuccess();
       setState({ ...state, books });
     } catch (error) {
-      const errorMessages = { ...state.updateErrorMessages };
-      errorMessages[book.toDto().id] = getErrorMessage(error);
-      setState({ ...state, updateErrorMessages: errorMessages });
+      onError(getErrorMessage(error));
     }
   }
 
@@ -102,12 +99,6 @@ export function useLibraryApp(service: LibraryService) {
     setState({ ...state, bookCover: event.target.value });
   }
 
-  const clearError = (book: Book) => {
-    const errorMessages = { ...state.updateErrorMessages };
-    errorMessages[book.toDto().id] = '';
-    setState({ ...state, updateErrorMessages: errorMessages });
-  }
-
   const setLocale = (locale: Locale) => {
     setState({ ...state, locale });
   }
@@ -120,7 +111,6 @@ export function useLibraryApp(service: LibraryService) {
     bookCover: state.bookCover,
     counter: countCompletedBooks(state.books as Book[]),
     addErrorMessage: state.addErrorMessage,
-    updateErrorMessages: state.updateErrorMessages,
     initialize,
     add,
     books,
@@ -130,7 +120,6 @@ export function useLibraryApp(service: LibraryService) {
     setFilter,
     toggleComplete,
     update,
-    clearError,
     setLocale
   };
 }
