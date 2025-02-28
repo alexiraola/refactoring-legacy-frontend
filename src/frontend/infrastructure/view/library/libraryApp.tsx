@@ -48,7 +48,7 @@ export const LibraryApp = ({ service }: LibraryProps) => {
         <button data-testid="showUnreadBooks" className="library-button incomplete-filter" onClick={() => hook.setFilter('incomplete')}>{t.filter.unread}</button>
       </div>
       <ul data-testid="books" className="book-list">
-        {hook.books.map(book => <BookItem key={book.toDto().id} t={t} book={book}
+        {hook.books.map(book => <BookItem key={book.toDto().id} t={t} book={book.toDto()}
           onMarkAsReadClicked={() => hook.toggleComplete(book)}
           onDeleteClicked={() => hook.deleteBook(book)}
           onEdit={(title, cover, onSuccess, onError) => {

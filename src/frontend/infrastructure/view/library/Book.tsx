@@ -1,51 +1,20 @@
 import { IonIcon } from "@ionic/react";
 import * as React from "react";
-import { useState } from "react";
 import { trash, createOutline, checkmark } from 'ionicons/icons';
-import { Book } from "../../../domain/book";
+import { BookDto } from "../../../domain/book";
 import { Translations } from "../../locale/translation";
+import { BookItemStatus, useBook } from "./BookHook";
 
 type Props = {
   t: Translations;
-  book: Book;
+  book: BookDto;
   onMarkAsReadClicked: () => void;
   onDeleteClicked: () => void;
   onEdit: (title: string, cover: string, onSuccess: () => void, onError: (errorMessage: string) => void) => void;
 }
 
-type BookItemState = {
-  updating: boolean;
-  status: BookItemStatus;
-  errorMessage: string;
-  editingTitle: string;
-  editingCover: string;
-}
-
-enum BookItemStatus {
-  Viewing,
-  Editing,
-}
-
-export default function BookItem({ t, book: b, onMarkAsReadClicked, onDeleteClicked, onEdit }: Props) {
-  const book = b.toDto();
-
-  const [state, setState] = useState<BookItemState>({
-    updating: false,
-    status: BookItemStatus.Viewing,
-    errorMessage: '',
-    editingTitle: book.title,
-    editingCover: book.pictureUrl
-  });
-
-  const edit = () => {
-    setState({
-      updating: true,
-      status: BookItemStatus.Editing,
-      errorMessage: '',
-      editingTitle: book.title,
-      editingCover: book.pictureUrl
-    })
-  }
+export default function BookItem({ t, book, onMarkAsReadClicked, onDeleteClicked, onEdit }: Props) {
+  const hook = useBook(book, onEdit);
 
   const renderEditingBook = () => {
     return (
@@ -55,31 +24,23 @@ export default function BookItem({ t, book: b, onMarkAsReadClicked, onDeleteClic
             data-testid="editTitle"
             className="book-edit-input"
             defaultValue={book.title}
-            onChange={event => setState({ ...state, editingTitle: event.target.value })}
+            onChange={hook.onTitleChange}
           />
           <input
             data-testid="editCover"
             className="book-edit-input"
             defaultValue={book.pictureUrl}
-            onChange={event => setState({ ...state, editingCover: event.target.value })}
+            onChange={hook.onCoverChange}
           />
-          {state.errorMessage && <p data-testid="update-error" style={{ color: 'red' }}>{state.errorMessage}</p>}
+          {hook.errorMessage && <p data-testid="update-error" style={{ color: 'red' }}>{hook.errorMessage}</p>}
         </div>
         <div>
           <button data-testid="saveEdit" className="library-button book-update-button"
-            onClick={() => {
-              onEdit(state.editingTitle, state.editingCover, () => {
-                setState({ ...state, updating: false, status: BookItemStatus.Viewing, errorMessage: '' });
-              }, (errorMessage) => {
-                setState({ ...state, status: BookItemStatus.Editing, errorMessage });
-              });
-            }}>
+            onClick={hook.onSave}>
             {t.book.save}
           </button>
           <button data-testid="cancel" className="library-button book-update-button"
-            onClick={() => {
-              setState({ ...state, updating: false, status: BookItemStatus.Viewing, errorMessage: '' });
-            }}>
+            onClick={hook.onCancel}>
             {t.book.cancel}
           </button>
         </div>
@@ -100,7 +61,7 @@ export default function BookItem({ t, book: b, onMarkAsReadClicked, onDeleteClic
             {book.completed ? t.book.markAsUnread : t.book.markAsRead}
           </button>
           <button data-testid="edit" className="book-button"
-            onClick={() => edit()}><IonIcon icon={createOutline} />
+            onClick={hook.onEdit}><IonIcon icon={createOutline} />
           </button>
           <button data-testid="delete" className="book-button book-delete-button"
             onClick={() => onDeleteClicked()}>
@@ -114,7 +75,7 @@ export default function BookItem({ t, book: b, onMarkAsReadClicked, onDeleteClic
   return (
     <li className="book" data-testid="book">
       {
-        state.status === BookItemStatus.Editing
+        hook.status === BookItemStatus.Editing
           ? renderEditingBook()
           : renderViewBook()}
     </li>
