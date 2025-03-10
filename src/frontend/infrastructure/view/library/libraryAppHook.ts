@@ -3,7 +3,7 @@ import { Book } from "../../../domain/book";
 import { LibraryService } from "../../../application/library.service";
 import { useState } from "react";
 import { countCompletedBooks } from "../../../domain/services/count.book";
-import { Locale } from "../../../domain/locale";
+import { Locale } from "../../locale/locale";
 
 export type FilterType = 'all' | 'completed' | 'incomplete';
 

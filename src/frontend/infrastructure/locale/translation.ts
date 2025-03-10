@@ -1,6 +1,6 @@
-import { Locale } from "../../domain/locale";
 import { en } from "./en";
 import { es } from "./es";
+import { Locale } from "./locale";
 
 export class TranslationFactory {
   static getTranslationsFor(locale: Locale) {

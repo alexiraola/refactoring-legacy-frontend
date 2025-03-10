@@ -1,5 +1,5 @@
 import { describe, expect } from "vitest";
-import { Locale } from "../../../frontend/domain/locale";
+import { Locale } from "../../../frontend/infrastructure/locale/locale";
 
 describe('Locale', () => {
   it('should create an instance for English', () => {

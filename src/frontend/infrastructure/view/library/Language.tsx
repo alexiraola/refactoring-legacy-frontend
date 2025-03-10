@@ -1,5 +1,5 @@
 import React from "react";
-import { Locale } from "../../../domain/locale";
+import { Locale } from "../../locale/locale";
 
 type LanguageProps = {
   locale: Locale;
