@@ -2,20 +2,20 @@ import { IonIcon } from "@ionic/react";
 import * as React from "react";
 import { trash, createOutline, checkmark } from 'ionicons/icons';
 import { BookDto } from "../../../domain/book";
-import { Translations } from "../../locale/translation";
 import { BookItemStatus, useBook } from "./BookHook";
 import { getErrorMessage } from "../errors";
+import { useTranslation } from "../locale.hook";
 
 type Props = {
-  t: Translations;
   book: BookDto;
   onMarkAsReadClicked: () => void;
   onDeleteClicked: () => void;
   onEdit: (title: string, cover: string, onSuccess: () => void, onError: (error: Error) => void) => void;
 }
 
-export default function BookItem({ t, book, onMarkAsReadClicked, onDeleteClicked, onEdit }: Props) {
+export default function BookItem({ book, onMarkAsReadClicked, onDeleteClicked, onEdit }: Props) {
   const hook = useBook(book, onEdit);
+  const { t } = useTranslation();
 
   const renderEditingBook = () => {
     return (

@@ -3,12 +3,10 @@ import { Book } from "../../../domain/book";
 import { LibraryService } from "../../../application/library.service";
 import { useState } from "react";
 import { countCompletedBooks } from "../../../domain/services/count.book";
-import { Locale } from "../../locale/locale";
 
 export type FilterType = 'all' | 'completed' | 'incomplete';
 
 type LibraryState = {
-  readonly locale: Locale;
   readonly books: ReadonlyArray<Book>;
   readonly bookTitle: string;
   readonly bookCover: string;
@@ -17,7 +15,6 @@ type LibraryState = {
 }
 
 const initialState = (): LibraryState => ({
-  locale: Locale.en(),
   books: [],
   bookTitle: '',
   bookCover: '',
@@ -81,14 +78,9 @@ export function useLibraryApp(service: LibraryService) {
     setState({ ...state, bookCover: event.target.value });
   }
 
-  const setLocale = (locale: Locale) => {
-    setState({ ...state, locale });
-  }
-
   const books = filterBooks(state.books as Book[], state.filter);
 
   return {
-    locale: state.locale,
     bookTitle: state.bookTitle,
     bookCover: state.bookCover,
     counter: countCompletedBooks(state.books as Book[]),
@@ -102,7 +94,6 @@ export function useLibraryApp(service: LibraryService) {
     setFilter,
     toggleComplete,
     update,
-    setLocale
   };
 }
 

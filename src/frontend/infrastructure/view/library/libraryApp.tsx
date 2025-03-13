@@ -1,18 +1,17 @@
 import * as React from "react";
 import { useEffect } from "react";
 import { LibraryService } from "../../../application/library.service";
-import { TranslationFactory } from "../../locale/translation";
 import BookItem from "./Book";
 import { useLibraryApp } from "./libraryAppHook";
 import Language from "./Language";
 import { getErrorMessage } from "../errors";
+import { useTranslation } from "../locale.hook";
 
 type LibraryProps = { service: LibraryService };
 
 export const LibraryApp = ({ service }: LibraryProps) => {
   const hook = useLibraryApp(service);
-
-  const t = TranslationFactory.getTranslationsFor(hook.locale);
+  const { t } = useTranslation();
 
   useEffect(() => {
     hook.initialize();
@@ -20,7 +19,7 @@ export const LibraryApp = ({ service }: LibraryProps) => {
 
   return (
     <div className="app-container">
-      <Language locale={hook.locale} onChange={(locale) => hook.setLocale(locale)} />
+      <Language />
       <h1>{t.appTitle}</h1>
       <div>
         <input
